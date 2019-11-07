@@ -1,0 +1,7 @@
+{
+    "append": true,
+    "watch": true,
+    "script": "app.js",
+    "minUptime": 1000,
+    "spinSleepTime": 10000
+}

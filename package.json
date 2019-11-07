@@ -1,0 +1,23 @@
+{
+  "name": "sv-messages",
+  "version": "1.0.0",
+  "description": "Schoolvoice GraphQL Messages API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "forever start ./forever.json",
+    "dev": "nodemon app.js",
+    "stop": "forever stop app.js"
+  },
+  "author": "Omar Almashjari",
+  "license": "ISC",
+  "dependencies": {
+    "dataloader": "^1.4.0",
+    "express": "^4.17.1",
+    "express-graphql": "^0.9.0",
+    "graphql": "^14.5.8",
+    "graphql-resolve-batch": "^1.0.2",
+    "mysql": "^2.17.1",
+    "promisfy": "^1.2.0"
+  }
+}
