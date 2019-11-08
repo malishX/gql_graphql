@@ -8,44 +8,84 @@ const {StudentType, StudentTypeObj} = require('./Student');
 const db = require('../db');
 const DataLoader = require('dataloader');
 
-const getMessageKids = messageIDs => {
-    return Promise.all(
-        messageIDs.map(id => {
-            let query = `select * from students where id in (select distinct student_id from messages_mapping where message_id in(`+id+`))`;
-            let result = db.get(query).then(function(response){
-                // let ids = [];
-                response.map(student => {
-                    // ids.push(student.student_id)
-                    console.log(student);
-                    return StudentTypeObj(student);
-                })
-                // return studentLoader.load(ids);
-            }).catch(function(err){
-                console.log(err);
-            });
-            return result;
-        })
-    );
+
+// const getMessageKids = messageID => {
+//     let query = `select * from students where id in (select distinct student_id from messages_mapping where message_id in(`+messageID+`))`;
+//     let result = db.get(query).then(function(response){
+//         response.map(student => {
+//             return StudentTypeObj(student);
+//         });
+//     }).catch(function(err){
+//         console.log(err);
+//     });
+//     return result;
+// }
+
+const getMessageByID = msgID => {
+    let query = "Select * from messages where id in ("+msgID+")";
+    return db.get(query).then( response => {
+        console.log(query);
+        return (MessageTypeObj(response[0]));
+    }).catch( err => {
+        console.log(err);
+    });
 };
 
-const getStudentById = studentIDs => {
-    return Promise.all( 
-        studentIDs.map(id => {
-            let query = `SELECT * FROM students WHERE id in(`+id+`)`;
-            let result = db.get(query).then(function(response){
-            return response.map((student)=>{
-                return StudentTypeObj(student);
-            });
-            }).catch(function(err){
-                console.log(err);
-            });
-            // console.log(result);
-            return result;
+const getMessages = () => {
+    let query = `SELECT message_id
+    FROM messages_mapping WHERE messages_mapping.contact_id=`+args.contactID;
+    return db.get(query).then( response => {
+        response = response.map((messsage) => {
+            // getting the message ids only
+            return messsage.message_id;
         })
-    )
-};
-let studentLoader = new DataLoader(getStudentById);
-let MessageKidsLoader = new DataLoader(getMessageKids);
+        return Promise.all( 
+            response.map(getMessageByID)
+        );
+    });
+}
+
+// const getMessagesKids = messageIDs => {
+//     return response.map(message => {
+//         message.kids
+//     })
+//     return Promise.all(
+//         () => {
+//             let query = `select * from students where id in (select distinct student_id from messages_mapping where message_id in(`+messageIDs+`))`;
+//             let result = db.get(query).then(function(response){
+//                 // let ids = [];
+//                 response.map(student => {
+//                     // ids.push(student.student_id)
+//                     console.log(student);
+//                     return StudentTypeObj(student);
+//                 })
+//                 // return studentLoader.load(ids);
+//             }).catch(function(err){
+//                 console.log(err);
+//             });
+//             return result;
+//         }
+//     );
+// };
+
+// const getStudentById = studentIDs => {
+//     return Promise.all( 
+//         studentIDs.map(id => {
+//             let query = `SELECT * FROM students WHERE id in(`+id+`)`;
+//             let result = db.get(query).then(function(response){
+//             return response.map((student)=>{
+//                 return StudentTypeObj(student);
+//             });
+//             }).catch(function(err){
+//                 console.log(err);
+//             });
+//             // console.log(result);
+//             return result;
+//         })
+//     )
+// };
+// let studentLoader = new DataLoader(getStudentById);
+// let MessageKidsLoader = new DataLoader(getMessagesKids);
 
 const {
     GraphQLObjectType,
@@ -166,7 +206,7 @@ const MessageType = new GraphQLObjectType({
             //     return result;
             // }
             resolve: (parent, args, context) => {
-                MessageKidsLoader.load(parent.id);
+                // MessageKidsLoader.load(parent.id);
             }
         },
         amount: {type: GraphQLInt},
@@ -207,5 +247,6 @@ const MessageType = new GraphQLObjectType({
 
 module.exports = {
     MessageType,
-    MessageTypeObj
+    MessageTypeObj,
+    getMessageByID
 };
