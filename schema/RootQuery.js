@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const {MessageType, MessageTypeObj, getMessageByID} = require('./Message');
+const {MessageType, MessageTypeObj, getMessageByID, messageLoader} = require('./Message');
 const {ContactType, ContactTypeObj} = require('./Contact');
 const {UserType, UserTypeObj} = require('./User');
 const {StudentType, StudentTypeObj} = require('./Student');
@@ -24,12 +24,6 @@ const {
 //     );
 // });
 
-const messagesLoader = new DataLoader( keys => {
-        return Promise.all( 
-            keys.map(getMessageByID)
-        );
-    }
-, { cache: false });
 
 const RootQueryType = new GraphQLObjectType({
     name: 'RootQuery',
@@ -38,7 +32,7 @@ const RootQueryType = new GraphQLObjectType({
             type: MessageType,
             args: { id: {type: GraphQLID} },
             resolve: (parent,args) => {
-                return getMessageByID(args.id);
+                return messageLoader.load(args.id);
             }
         },
         contact: {
@@ -130,12 +124,18 @@ const RootQueryType = new GraphQLObjectType({
                 let query = `SELECT message_id
                 FROM messages_mapping WHERE messages_mapping.contact_id=`+args.contactID;
                 return db.get(query).then( response => {
+
                     response = response.map((messsage) => { 
                         // getting the message ids only
                         return messsage.message_id;
                     });
                     console.log(response);
-                    return messagesLoader.loadMany(response);
+                    let result = Promise.all(response.map(getMessageByID));
+                    // let result = messageLoader.loadMany(response); // this is working but ... console shows many requests?!
+                    // am i actually batching ?? how can i know?
+                    console.log(result);
+                    return result;
+
                 });
             }
         }

@@ -31,19 +31,34 @@ const getMessageByID = msgID => {
     });
 };
 
-const getMessages = () => {
-    let query = `SELECT message_id
-    FROM messages_mapping WHERE messages_mapping.contact_id=`+args.contactID;
-    return db.get(query).then( response => {
-        response = response.map((messsage) => {
-            // getting the message ids only
-            return messsage.message_id;
-        })
-        return Promise.all( 
-            response.map(getMessageByID)
-        );
+const getContactMessagses = contactID => {
+    return msgIDs.map(id => {
+        return getMessageByID(id);
     });
-}
+};
+
+const messageLoader = new DataLoader(keys => {
+        return Promise.all(
+            keys.map(getMessageByID)
+        );
+    }
+, { cache: false });
+
+
+
+// const getMessages = () => {
+//     let query = `SELECT message_id
+//     FROM messages_mapping WHERE messages_mapping.contact_id=`+args.contactID;
+//     return db.get(query).then( response => {
+//         response = response.map((messsage) => {
+//             // getting the message ids only
+//             return messsage.message_id;
+//         })
+//         return Promise.all( 
+//             response.map(getMessageByID)
+//         );
+//     });
+// }
 
 // const getMessagesKids = messageIDs => {
 //     return response.map(message => {
@@ -248,5 +263,6 @@ const MessageType = new GraphQLObjectType({
 module.exports = {
     MessageType,
     MessageTypeObj,
-    getMessageByID
+    getMessageByID,
+    messageLoader
 };
