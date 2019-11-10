@@ -1,10 +1,10 @@
 const graphql = require('graphql');
 const {FlagType, FlagTypeObj} = require('./Flag');
-const {FileType, FileTypeObj} = require('./file');
+const {FileType, FileTypeObj} = require('./File');
 const {UserType, UserTypeObj} = require('./User');
 const {SchoolType, SchoolTypeObj} = require('./School');
 const {DateTimeType, DateTimeTypeObj} = require('./DateTime');
-const {StudentType, StudentTypeObj} = require('./Student');
+const {StudentType} = require('./Student');
 const db = require('../db');
 const DataLoader = require('dataloader');
 
@@ -180,25 +180,9 @@ const MessageType = new GraphQLObjectType({
         },
         kids: {
             type: new GraphQLList(StudentType),
-            // resolve: (parent,args, context) => {
-            //     // if called from contacts check context otherwise just get all students
-            //     // should I use context ?? or can I use it ??
-
-            //     // message id + guardian id or contact id ??
-            //     let query = `select * 
-            //     from students 
-            //     where id=3191`;// in 
-            //     //(select distinct student_id from messages_mapping where message_id=`+parent.id+` AND contact_id=`+context.contact_id+`)`;
-            //     let result = db.get(query).then(function(response){
-            //         console.log(response);
-            //         return response.map((student)=>{
-            //             return StudentTypeObj(student);
-            //         });
-            //     }).catch(function(err){
-            //         console.log(err);
-            //     });
-            //     return result;
-            // }
+            resolve: (parent,args, context) => {
+                return context.loaders.studentLoader.load(parent.id);
+            }
             // resolve: (parent,args, context) => {
             //     // if called from contacts check context otherwise just get all students
             //     // should I use context ?? or can I use it ??
@@ -220,9 +204,9 @@ const MessageType = new GraphQLObjectType({
             //     });
             //     return result;
             // }
-            resolve: (parent, args, context) => {
-                // MessageKidsLoader.load(parent.id);
-            }
+            // resolve: (parent, args, context) => {
+            //     // MessageKidsLoader.load(parent.id);
+            // }
         },
         amount: {type: GraphQLInt},
         school: {

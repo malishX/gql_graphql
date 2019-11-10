@@ -10,6 +10,61 @@ const {
     GraphQLBoolean
 } = graphql;
 
+// const getMessageKids = (messageID) => {
+//     let query = `select * 
+//     from students 
+//     where id in
+//     (select distinct student_id from messages_mapping where message_id in (`+messageID+`)) AND contact_id=211375`;
+//     console.log(query);
+//     let students = db.get(query).then(response => {
+//         console.log(response);
+//         response.map(student => {
+//             // console.log(response);
+//             return StudentTypeObj(student);
+//         });
+//     }).catch(function(err){
+//         console.log(err);
+//     });
+    
+//     // console.log(Promise.all(result));
+//     // console.log(result.then);
+
+//     // [[kids], [kids], [kids]] <<< this what needs to be returned messageIDs length == kids array length
+
+//     return students.map(student => {
+//         student.
+//     });
+// }
+
+const getMessageKids = (messageID) => {
+    return Promise.all(messageID.map( msgID => {
+        // let query = `select * 
+        // from students 
+        // where id in
+        // (select distinct student_id from messages_mapping where message_id in (`+msgID+`) AND contact_id=211375 )`;
+        let query = `
+        SELECT
+        students.*
+        FROM
+        messages_mapping
+        JOIN students
+        ON messages_mapping.student_id = students.id
+        WHERE
+        message_id IN (`+ msgID +`) 
+            AND messages_mapping.contact_id = 211375
+        `
+        return db.get(query).then(students => {
+            return students.map(student => {
+                return StudentTypeObj(student);
+            });
+        }).catch(function(err){
+            console.log(err);
+        });
+    }));
+}
+
+// const studentLoader = new DataLoader( getMessageKids , { cache: false });
+
 const StudentTypeObj = (response) => {
     return {
         id: response.id,
@@ -59,5 +114,6 @@ const StudentType = new GraphQLObjectType({
 
 module.exports = {
     StudentType,
-    StudentTypeObj
+    StudentTypeObj,
+    getMessageKids
 };

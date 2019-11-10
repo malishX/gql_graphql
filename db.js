@@ -17,6 +17,7 @@ const connection = db.connect(function(err){
 
 const get = (query)=>{
     return new Promise ((resolve)=>{
+        console.log(query);
         db.query(query , function (err, result){
             if(err) throw err;
             resolve(result);
