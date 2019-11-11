@@ -5,25 +5,12 @@ const {UserType, UserTypeObj} = require('./User');
 const {StudentType, StudentTypeObj} = require('./Student');
 const {SchoolType, SchoolTypeObj} = require('./School'); 
 const db = require('../db');
-var DataLoader = require('dataloader');
 
 const {
     GraphQLObjectType,
     GraphQLID,
     GraphQLString,
-    GraphQLList,
 } = graphql;
-
-// let studentLoader = new DataLoader(ids => {
-//     let params = ids.map(id => '?' ).join();
-//     let query = `SELECT * FROM students WHERE id IN (${params})`;
-//     return queryLoader.load([query, ids]).then(
-//       rows => ids.map(
-//         id => rows.find(row => row.id === id) || new Error(`Row not found: ${id}`)
-//       )
-//     );
-// });
-
 
 const RootQueryType = new GraphQLObjectType({
     name: 'RootQuery',

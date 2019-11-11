@@ -1,5 +1,5 @@
 const graphql = require('graphql');
-const {MessageType, MessageTypeObj, getMessageByID, messageLoader} = require('./Message');
+const {MessageType, MessageTypeObj} = require('./Message');
 const {FlagType, FlagTypeObj} = require('./Flag');
 const db = require('../db');
 

@@ -1,6 +1,5 @@
 const graphql = require('graphql');
 const {SchoolType, SchoolTypeObj} = require('./School');
-// const {ContactType, ContactTypeObj} = require('./Contact');
 const db = require('../db');
 
 const {
@@ -9,32 +8,6 @@ const {
     GraphQLString,
     GraphQLBoolean
 } = graphql;
-
-// const getMessageKids = (messageID) => {
-//     let query = `select * 
-//     from students 
-//     where id in
-//     (select distinct student_id from messages_mapping where message_id in (`+messageID+`)) AND contact_id=211375`;
-//     console.log(query);
-//     let students = db.get(query).then(response => {
-//         console.log(response);
-//         response.map(student => {
-//             // console.log(response);
-//             return StudentTypeObj(student);
-//         });
-//     }).catch(function(err){
-//         console.log(err);
-//     });
-    
-//     // console.log(Promise.all(result));
-//     // console.log(result.then);
-
-//     // [[kids], [kids], [kids]] <<< this what needs to be returned messageIDs length == kids array length
-
-//     return students.map(student => {
-//         student.
-//     });
-// }
 
 const getMessageKids = (messageID) => {
     return Promise.all(messageID.map( msgID => {
@@ -62,8 +35,6 @@ const getMessageKids = (messageID) => {
         });
     }));
 }
-
-// const studentLoader = new DataLoader( getMessageKids , { cache: false });
 
 const StudentTypeObj = (response) => {
     return {

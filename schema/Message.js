@@ -8,19 +8,6 @@ const {StudentType} = require('./Student');
 const db = require('../db');
 const DataLoader = require('dataloader');
 
-
-// const getMessageKids = messageID => {
-//     let query = `select * from students where id in (select distinct student_id from messages_mapping where message_id in(`+messageID+`))`;
-//     let result = db.get(query).then(function(response){
-//         response.map(student => {
-//             return StudentTypeObj(student);
-//         });
-//     }).catch(function(err){
-//         console.log(err);
-//     });
-//     return result;
-// }
-
 const getMessageByID = msgID => {
     let query = "Select * from messages where id in ("+msgID+")";
     return db.get(query).then( response => {
@@ -31,76 +18,12 @@ const getMessageByID = msgID => {
     });
 };
 
-const getContactMessagses = contactID => {
-    return msgIDs.map(id => {
-        return getMessageByID(id);
-    });
-};
-
 const messageLoader = new DataLoader(keys => {
         return Promise.all(
             keys.map(getMessageByID)
         );
     }
 , { cache: false });
-
-
-
-// const getMessages = () => {
-//     let query = `SELECT message_id
-//     FROM messages_mapping WHERE messages_mapping.contact_id=`+args.contactID;
-//     return db.get(query).then( response => {
-//         response = response.map((messsage) => {
-//             // getting the message ids only
-//             return messsage.message_id;
-//         })
-//         return Promise.all( 
-//             response.map(getMessageByID)
-//         );
-//     });
-// }
-
-// const getMessagesKids = messageIDs => {
-//     return response.map(message => {
-//         message.kids
-//     })
-//     return Promise.all(
-//         () => {
-//             let query = `select * from students where id in (select distinct student_id from messages_mapping where message_id in(`+messageIDs+`))`;
-//             let result = db.get(query).then(function(response){
-//                 // let ids = [];
-//                 response.map(student => {
-//                     // ids.push(student.student_id)
-//                     console.log(student);
-//                     return StudentTypeObj(student);
-//                 })
-//                 // return studentLoader.load(ids);
-//             }).catch(function(err){
-//                 console.log(err);
-//             });
-//             return result;
-//         }
-//     );
-// };
-
-// const getStudentById = studentIDs => {
-//     return Promise.all( 
-//         studentIDs.map(id => {
-//             let query = `SELECT * FROM students WHERE id in(`+id+`)`;
-//             let result = db.get(query).then(function(response){
-//             return response.map((student)=>{
-//                 return StudentTypeObj(student);
-//             });
-//             }).catch(function(err){
-//                 console.log(err);
-//             });
-//             // console.log(result);
-//             return result;
-//         })
-//     )
-// };
-// let studentLoader = new DataLoader(getStudentById);
-// let MessageKidsLoader = new DataLoader(getMessagesKids);
 
 const {
     GraphQLObjectType,
@@ -113,6 +36,7 @@ const {
 
 const MessageTypeObj = (response) => {
     // here no relationships only matching native responses from db
+    // use Select column AS name .. later on
     return {
         id: response.id,
         created: response.created,
@@ -183,30 +107,6 @@ const MessageType = new GraphQLObjectType({
             resolve: (parent,args, context) => {
                 return context.loaders.studentLoader.load(parent.id);
             }
-            // resolve: (parent,args, context) => {
-            //     // if called from contacts check context otherwise just get all students
-            //     // should I use context ?? or can I use it ??
-
-            //     // message id + guardian id or contact id ??
-            //     // console.log(parent.id);
-            //     if (!parent.id) return null;
-            //     let query = `select distinct student_id from messages_mapping where message_id=`+parent.id;// AND contact_id=`+context.contact_id+`)`;
-            //     let result = db.get(query).then(function(response){
-            //         // console.log(response);
-            //         // return response.map((student)=>{
-            //         console.log(response);
-            //         //hereee -> get an array of students then pass it to the funciton
-            //         // then check when does the crash happen and handle it
-            //         return studentLoader.load(response);
-            //         // });
-            //     }).catch(function(err){
-            //         console.log(err);
-            //     });
-            //     return result;
-            // }
-            // resolve: (parent, args, context) => {
-            //     // MessageKidsLoader.load(parent.id);
-            // }
         },
         amount: {type: GraphQLInt},
         school: {
