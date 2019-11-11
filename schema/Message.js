@@ -96,13 +96,37 @@ const MessageType = new GraphQLObjectType({
                     // response must return on record
                     if (response[0].isCC) return true;
                     else return false;
+                }).catch(function(err){
+                    console.log(err);
                 });
             }
         },
         isReminder: {
+            // returns if this contact was reminded about this messages before
+            type: GraphQLBoolean,
+            resolve: (parent, args, context) => {
+                let query = `
+                SELECT id
+                FROM reminder_mapping
+                WHERE
+                    message_id = ` + parent .id +
+                    ` AND contact_id =` + context.contact_id;
+
+                return db.get(query).then( response => {
+                    if (response.length) return true;
+                        // if there is a reminder record, 
+                        // ; then the contact was sent a message reminder
+                    else return false;
+                }).catch( err => {
+                    console.log(err);
+                })
+            }
+        },
+        isEmergency: {
             type: GraphQLBoolean,
             resolve: parent => {
-                //this comes from message mapping
+                if (parent.message_type_id == 3) return true;
+                else return false;
             }
         },
         action_type_id: {type: GraphQLString}, 
