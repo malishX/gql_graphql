@@ -79,8 +79,24 @@ const MessageType = new GraphQLObjectType({
         },
         isCC: {
             type: GraphQLBoolean,
-            resolve: parent => {
-                //this comes from message mapping
+            resolve: (parent, args, context) => {
+                // get isCC from message mapping, using message_id and contact_id
+                let query = `
+                SELECT
+                    messages_mapping.is_cc AS isCC
+                FROM
+                    messages_mapping
+                WHERE
+                    messages_mapping.message_id = `+ parent.id +
+                    ` AND contact_id =` + context.contact_id;
+                // TODO: add one more check (staff_id), to get only one value no more,
+                // beacuse this query might return more than one value
+                // if the message was sent to a guardian + staff type and the staff is CCed;
+                return db.get(query).then( response => {
+                    // response must return on record
+                    if (response[0].isCC) return true;
+                    else return false;
+                });
             }
         },
         isReminder: {
