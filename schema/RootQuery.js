@@ -96,49 +96,6 @@ const RootQueryType = new GraphQLObjectType({
                 return result;
             }
         },
-        messages: {
-            type: new GraphQLList(MessageType),
-            args: {contactID: {type: GraphQLID}},
-            // resolve(parent, args, context){
-            //     // get all messages
-            //     // select message_id from messages_mapping where contact_id=parent.id
-            //     let query = `SELECT *
-            //     FROM messages_mapping INNER JOIN messages ON messages_mapping.message_id=messages.id 
-            //     WHERE messages_mapping.contact_id=`+args.contactID;
-
-            //     // console.log(query);
-            //     let result = db.get(query).then(function(response){
-            //         console.log(response);
-            //         // context.messageIDs = [];
-            //         return response.map((message)=>{
-            //             // context.messageIDs.push(message.id);
-            //             return MessageTypeObj(message);
-            //         });
-            //     }).catch(function(err){
-            //         console.log(err);
-            //     });
-            //     return result;
-            // },
-            resolve: (parent, args) => {
-                // querying all messages sent to this contact
-                let query = `SELECT message_id
-                FROM messages_mapping WHERE messages_mapping.contact_id=`+args.contactID;
-                return db.get(query).then( response => {
-
-                    response = response.map((messsage) => { 
-                        // getting the message ids only
-                        return messsage.message_id;
-                    });
-                    console.log(response);
-                    let result = Promise.all(response.map(getMessageByID));
-                    // let result = messageLoader.loadMany(response); // this is working but ... console shows many requests?!
-                    // am i actually batching ?? how can i know?
-                    console.log(result);
-                    return result;
-
-                });
-            }
-        }
     }
 });
 
