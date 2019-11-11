@@ -16,7 +16,6 @@
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
     "graphql": "^14.5.8",
-    "graphql-resolve-batch": "^1.0.2",
     "mysql": "^2.17.1",
     "promisfy": "^1.2.0"
   }
