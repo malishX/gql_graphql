@@ -9,7 +9,7 @@ const {
     GraphQLBoolean
 } = graphql;
 
-const getMessageKids = (messageID) => {
+const getMessageKids = (messageID, contactID) => {
     return Promise.all(messageID.map( msgID => {
         // let query = `select * 
         // from students 
@@ -23,9 +23,10 @@ const getMessageKids = (messageID) => {
         JOIN students
         ON messages_mapping.student_id = students.id
         WHERE
-        message_id IN (`+ msgID +`) 
-            AND messages_mapping.contact_id = 211375
-        `
+        message_id IN (`+ msgID +`) `;
+        // `AND messages_mapping.contact_id = ` + contactID; 
+       //TODO pass contactID argument and filter by that to return only contact kids
+            
         return db.get(query).then(students => {
             return students.map(student => {
                 return StudentTypeObj(student);

@@ -145,7 +145,7 @@ const MessageType = new GraphQLObjectType({
         kids: {
             type: new GraphQLList(StudentType),
             resolve: (parent,args, context) => {
-                return context.loaders.studentLoader.load(parent.id);
+                return context.loaders.studentLoader.load(parent.id, context.contact_id);
             }
         },
         amount: {type: GraphQLInt},
