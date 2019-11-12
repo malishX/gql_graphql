@@ -13,7 +13,6 @@ app.use('/', graphqlHTTP({
     context: {
         loaders: {
             studentLoader: new DataLoader( getMessageKids , { cache: false }),
-
         }
     },
     graphiql: true
