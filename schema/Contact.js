@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const {MessageType, MessageTypeObj} = require('./Message');
 const {FlagType, FlagTypeObj} = require('./Flag');
+const {SchoolType, SchoolTypeObj} = require('./School'); 
 const {StudentType, StudentTypeObj} = require('./Student');
 const db = require('../db');
 
@@ -133,6 +134,13 @@ const ContactType = new GraphQLObjectType({
                 }).catch( err => console.log(err));
             }
         },
+        schools: {
+            // returns a list schools a staff contact is enrolled in
+            type: GraphQLList(SchoolType),
+            resolve: parent => {
+                let query = `` ;
+            }
+        }
     })
 });
 
