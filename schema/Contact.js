@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const {MessageType, MessageTypeObj} = require('./Message');
 const {FlagType, FlagTypeObj} = require('./Flag');
+const {StudentType, StudentTypeObj} = require('./Student');
 const db = require('../db');
 
 const {
@@ -77,10 +78,11 @@ const ContactType = new GraphQLObjectType({
         status: {type: GraphQLString},
         messages: {
             type: new GraphQLList(MessageType),
-            resolve(parent, args, context, info){
+            resolve(parent, args, context){
 
                 // store the contact_id in the context to use it in the messages' kids' resovler
                 context.contact_id = parent.id;
+                //TODO make sure this is relevant to the current request only
 
                 // get all messages mapped to this parent.id (contact.id)
                 let query = `SELECT 
@@ -106,7 +108,31 @@ const ContactType = new GraphQLObjectType({
                 });
                 return result;
             }
-        }
+        },
+        children: {
+            type: GraphQLList(StudentType),
+            resolve: parent => {
+                let query = `
+                SELECT
+                    * 
+                FROM
+                    students 
+                WHERE
+                    id IN (
+                    SELECT
+                        guardian_student_mapping.student_id 
+                    FROM
+                        guardian
+                        INNER JOIN guardian_student_mapping ON guardian.id = guardian_student_mapping.guardian_id 
+                WHERE
+                    contact_id = ` + parent.id + `)`;
+                return db.get(query).then( response => {
+                    return response.map(kid => {
+                        return StudentTypeObj(kid);
+                    });
+                }).catch( err => console.log(err));
+            }
+        },
     })
 });
 
