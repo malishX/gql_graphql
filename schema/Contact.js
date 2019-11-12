@@ -104,7 +104,7 @@ const ContactType = new GraphQLObjectType({
                 DATE_FORMAT(messages.scheduled_time, "%H:%i %d/%m/%Y" ) as scheduled_time
                 FROM messages_mapping INNER JOIN messages ON messages_mapping.message_id=messages.id 
                 WHERE messages_mapping.contact_id=`+parent.id+`
-                LIMIT 20`;
+                LIMIT ` + args.first;
                 let result = db.get(query).then(function(response){
                     return response.map((message)=>{
                         return MessageTypeObj(message);
