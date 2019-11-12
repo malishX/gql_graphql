@@ -10,6 +10,7 @@ const {
     GraphQLID,
     GraphQLString,
     GraphQLList,
+    GraphQLInt
 } = graphql;
 
 const ContactTypeObj = (response) => {
@@ -79,6 +80,9 @@ const ContactType = new GraphQLObjectType({
         status: {type: GraphQLString},
         messages: {
             type: new GraphQLList(MessageType),
+            args: {
+                first: {type: GraphQLInt}
+            },
             resolve(parent, args, context){
 
                 // store the contact_id in the context to use it in the messages' kids' resovler
@@ -99,7 +103,8 @@ const ContactType = new GraphQLObjectType({
                 messages.is_scheduled, 
                 DATE_FORMAT(messages.scheduled_time, "%H:%i %d/%m/%Y" ) as scheduled_time
                 FROM messages_mapping INNER JOIN messages ON messages_mapping.message_id=messages.id 
-                WHERE messages_mapping.contact_id=`+parent.id;
+                WHERE messages_mapping.contact_id=`+parent.id+`
+                LIMIT 20`;
                 let result = db.get(query).then(function(response){
                     return response.map((message)=>{
                         return MessageTypeObj(message);
