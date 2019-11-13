@@ -6,7 +6,8 @@ const {
     GraphQLObjectType,
     GraphQLID,
     GraphQLString,
-    GraphQLBoolean
+    GraphQLBoolean,
+    GraphQLList,
 } = graphql;
 
 const getMessageKids = (messageID, contactID) => {
@@ -57,12 +58,6 @@ const StudentType = new GraphQLObjectType({
     fields: ()=>({
         id: {type: GraphQLID},
         name: {type: GraphQLString},
-        // contact: {
-        //     type: ContactType,
-        //     resolve: parent => {
-                
-        //     }
-        // },
         school: {
             type: SchoolType,
             resolve: parent => {
@@ -76,8 +71,34 @@ const StudentType = new GraphQLObjectType({
             }
         },
         roll_no: {type: GraphQLString},
-        //grade
-        //section
+        grade: {
+            type: GraphQLString,
+            resolve: parent => {
+                let query = `
+                SELECT name AS grade
+                FROM grade
+                WHERE id = ` + parent.grade_id;
+                return db.get(query).then( response => {
+                    return response[0].grade;
+                }).catch(err => console.log(err));
+            }
+        },
+        sections: {
+            // return an array of all sections a student is enrolled in
+            // TODO return multiple sections from 'multiple_student_section_mapping' table
+            type: new GraphQLList(GraphQLString),
+            resolve: parent => {
+                let query = `
+                SELECT name AS section
+                FROM section
+                WHERE id = ` + parent.section_id;
+                return db.get(query).then(response => {
+                    return response.map(row => {
+                        return row.section;
+                    });
+                }).catch(err => console.log(err));
+            }
+        },
         mobile: { type: GraphQLString },
         profile_image: {type: GraphQLString},
         in_multiple_sections: {type: GraphQLBoolean}
