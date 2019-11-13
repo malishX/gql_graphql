@@ -4,6 +4,7 @@ const {ContactType, ContactTypeObj} = require('./Contact');
 const {UserType, UserTypeObj} = require('./User');
 const {StudentType, StudentTypeObj} = require('./Student');
 const {SchoolType, SchoolTypeObj} = require('./School'); 
+const {LoginType, LoginTypeObj} = require('./login'); 
 const db = require('../db');
 
 const {
@@ -24,12 +25,11 @@ const RootQueryType = new GraphQLObjectType({
         },
         contact: {
             type: ContactType,
-            args: { id: {type: GraphQLID}, mobile: {type: GraphQLString}},
+            args: { id: {type: GraphQLID}},
             resolve: (parent,args) => {
                 let query;
-                //this can be a switch statment and maybe can be encapsulated in a function to handle it.
+                // TODO this can be a switch statment and maybe can be encapsulated in a function to handle it.
                 if (args.id) query = "Select * from contacts where id="+args.id;
-                else if (args.mobile) query = "Select * from contacts where mobile='"+args.mobile+"'";
                 let result = db.get(query).then(function(response){
                     return ContactTypeObj(response[0]);
                 }).catch(function(err){
@@ -81,6 +81,21 @@ const RootQueryType = new GraphQLObjectType({
                     console.log(err);
                 });
                 return result;
+            }
+        },
+        login: {
+            type: LoginType,
+            args: {
+                mobile: {type: GraphQLString}
+            },
+            resolve: (parent, args) =>{
+                let query = `
+                SELECT id, auth_token
+                FROM contacts
+                WHERE mobile = '` + args.mobile + `'`;
+                return db.get(query).then( response => {
+                    return LoginTypeObj(response[0]);
+                }).catch( err => console.log(err));
             }
         },
     }

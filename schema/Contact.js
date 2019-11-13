@@ -20,8 +20,6 @@ const ContactTypeObj = (response) => {
         mobile: response.mobile,
         email: response.email,
         image: response.image,
-        otp: "1234",
-        auth_token: response.auth_token,
         contact_type_id: response.contact_type_id,
         device_type: response.device_type,
         device_id: response.device_id,
@@ -48,8 +46,6 @@ const ContactType = new GraphQLObjectType({
         mobile: {type: GraphQLString},
         email: {type: GraphQLString},
         image: {type: GraphQLString},
-        otp: {type: GraphQLString},
-        auth_token: {type: GraphQLString},
         contact_type_id: {type: GraphQLString},
         type: {
             type: FlagType,
