@@ -10,7 +10,8 @@ const {
     GraphQLID,
     GraphQLString,
     GraphQLList,
-    GraphQLInt
+    GraphQLInt,
+    GraphQLBoolean
 } = graphql;
 
 const ContactTypeObj = (response) => {
@@ -78,13 +79,15 @@ const ContactType = new GraphQLObjectType({
             type: new GraphQLList(MessageType),
             args: {
                 // returns latest N messages
-                first: {type: GraphQLInt}
+                first: {type: GraphQLInt},
+                as_guardian: {type: GraphQLBoolean},
+                as_staff: {type: GraphQLBoolean},
             },
             resolve(parent, args, context){
 
-                // store the contact_id in the context to use it in the messages' kids' resovler
-                context.contact_id = parent.id;
+                // Store the contact_id in the context to use it in the messages' kids' resovler
                 //TODO make sure this is relevant to the current request only
+                context.contact_id = parent.id;
 
                 // return all messages mapped to this parent.id (contact.id)
                 // That have been 1. approved
@@ -100,13 +103,24 @@ const ContactType = new GraphQLObjectType({
                 messages.created_by, 
                 messages.school_id, 
                 messages.is_scheduled, 
-                messages.scheduled_time,
+                messages.scheduled_time
                 FROM messages_mapping INNER JOIN messages ON messages_mapping.message_id=messages.id 
-                WHERE messages_mapping.contact_id=`+parent.id+`
-                AND
-	            messages.approval_status in (0,2)
-                ORDER BY messages_mapping.created DESC
-                LIMIT ` + args.first;
+                WHERE messages_mapping.contact_id= `+parent.id+`
+                AND messages.approval_status in (0,2)`;
+                
+                if (args.as_guardian)
+                    query += ` AND messages_mapping.guardian_id != 0 `
+                if (args.as_staff)
+                    query += ` AND messages_mapping.staff_id != 0 `
+                
+                // TODO if both are true return all messages
+                // TODO messages as student
+
+                query += ` ORDER BY messages_mapping.created DESC `;
+
+                if (args.first != null)
+                query += ` LIMIT ` + args.first;
+
                 let result = db.get(query).then(function(response){
                     return response.map((message)=>{
                         return MessageTypeObj(message);
