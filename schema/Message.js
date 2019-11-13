@@ -3,7 +3,6 @@ const {FlagType, FlagTypeObj} = require('./Flag');
 const {FileType, FileTypeObj} = require('./File');
 const {UserType, UserTypeObj} = require('./User');
 const {SchoolType, SchoolTypeObj} = require('./School');
-const {DateTimeType, DateTimeTypeObj} = require('./DateTime');
 const {StudentType} = require('./Student');
 const db = require('../db');
 const DataLoader = require('dataloader');
@@ -42,7 +41,6 @@ const MessageTypeObj = (response) => {
         created: response.created,
         text: response.message,
         files: response.files,
-        created: response.created,
         amount: response.amount,
         action_type_id: response.action_type_id,
         message_type_id: response.message_type_id,
@@ -162,10 +160,10 @@ const MessageType = new GraphQLObjectType({
             }
         },
         date_time: {
-            type: DateTimeType,
-            resolve: (parent, args, context, info) => {
-                if (parent.is_scheduled) return DateTimeTypeObj(parent.scheduled_time);
-                else return DateTimeTypeObj(parent.created);
+            type: GraphQLString,
+            resolve: parent  => {
+                if (parent.is_scheduled) return parent.scheduled_time;
+                else return parent.created;
             }
         },
         sender: {
