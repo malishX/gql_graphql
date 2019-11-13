@@ -77,6 +77,7 @@ const ContactType = new GraphQLObjectType({
         messages: {
             type: new GraphQLList(MessageType),
             args: {
+                // returns latest N messages
                 first: {type: GraphQLInt}
             },
             resolve(parent, args, context){
@@ -85,7 +86,9 @@ const ContactType = new GraphQLObjectType({
                 context.contact_id = parent.id;
                 //TODO make sure this is relevant to the current request only
 
-                // get all messages mapped to this parent.id (contact.id)
+                // return all messages mapped to this parent.id (contact.id)
+                // That have been 1. approved
+                // Ordered from newest to oldest
                 let query = `SELECT 
                 messages.id, 
                 DATE_FORMAT(messages.created, "%H:%i %d/%m/%Y" ) as created, 
@@ -100,6 +103,9 @@ const ContactType = new GraphQLObjectType({
                 DATE_FORMAT(messages.scheduled_time, "%H:%i %d/%m/%Y" ) as scheduled_time
                 FROM messages_mapping INNER JOIN messages ON messages_mapping.message_id=messages.id 
                 WHERE messages_mapping.contact_id=`+parent.id+`
+                AND
+	            messages.approval_status in (0,2)
+                ORDER BY messages_mapping.created DESC
                 LIMIT ` + args.first;
                 let result = db.get(query).then(function(response){
                     return response.map((message)=>{
