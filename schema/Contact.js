@@ -91,7 +91,7 @@ const ContactType = new GraphQLObjectType({
                 // Ordered from newest to oldest
                 let query = `SELECT 
                 messages.id, 
-                DATE_FORMAT(messages.created, "%H:%i %d/%m/%Y" ) as created, 
+                messages.created,
                 messages.message, 
                 messages.amount, 
                 messages.action_type_id, 
@@ -100,7 +100,7 @@ const ContactType = new GraphQLObjectType({
                 messages.created_by, 
                 messages.school_id, 
                 messages.is_scheduled, 
-                DATE_FORMAT(messages.scheduled_time, "%H:%i %d/%m/%Y" ) as scheduled_time
+                messages.scheduled_time,
                 FROM messages_mapping INNER JOIN messages ON messages_mapping.message_id=messages.id 
                 WHERE messages_mapping.contact_id=`+parent.id+`
                 AND
