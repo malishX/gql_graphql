@@ -3,7 +3,7 @@ const {FlagType, FlagTypeObj} = require('./Flag');
 const {FileType, FileTypeObj} = require('./File');
 const {UserType, UserTypeObj} = require('./User');
 const {SchoolType, SchoolTypeObj} = require('./School');
-const {StudentType} = require('./Student');
+const {StudentType, StudentTypeObj} = require('./Student');
 const db = require('../db');
 const DataLoader = require('dataloader');
 
@@ -143,7 +143,27 @@ const MessageType = new GraphQLObjectType({
         kids: {
             type: new GraphQLList(StudentType),
             resolve: (parent,args, context) => {
-                return context.loaders.studentLoader.load(parent.id, context.contact_id);
+                // return context.loaders.studentLoader.load(parent.id, context.contact_id);
+                // TODO use StudentLoader and pass contact_id to it
+
+                let query = `
+                SELECT
+                distinct students.*
+                FROM
+                messages_mapping
+                JOIN students
+                ON messages_mapping.student_id = students.id
+                WHERE
+                message_id IN (`+ parent.id +`)
+                AND messages_mapping.contact_id = ` + context.contact_id; 
+                
+                return db.get(query).then(students => {
+                    return students.map(student => {
+                        return StudentTypeObj(student);
+                    });
+                }).catch(function(err){
+                    console.log(err);
+                });
             }
         },
         amount: {type: GraphQLInt},

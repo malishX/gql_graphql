@@ -11,9 +11,9 @@ const app = express();
 app.use('/', graphqlHTTP({
     schema,
     context: {
-        loaders: {
-            studentLoader: new DataLoader( getMessageKids , { cache: false }),
-        }
+        // loaders: {
+        //     studentLoader: new DataLoader( getMessageKids , { cache: true }),
+        // }
     },
     graphiql: true
 }));

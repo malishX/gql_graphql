@@ -18,7 +18,7 @@ const getMessageKids = (messageID, contactID) => {
         // (select distinct student_id from messages_mapping where message_id in (`+msgID+`) AND contact_id=211375 )`;
         let query = `
         SELECT
-        students.*
+        distinct students.*
         FROM
         messages_mapping
         JOIN students
