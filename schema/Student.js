@@ -1,5 +1,6 @@
 const graphql = require('graphql');
 const {SchoolType, SchoolTypeObj} = require('./School');
+const {GuardianType, GuardianTypeObj} = require('./Guardian');
 const db = require('../db');
 
 const {
@@ -72,6 +73,7 @@ const StudentType = new GraphQLObjectType({
         },
         roll_no: {type: GraphQLString},
         grade: {
+            // return a string of the grade name a student is enrolled in
             type: GraphQLString,
             resolve: parent => {
                 let query = `
@@ -84,7 +86,7 @@ const StudentType = new GraphQLObjectType({
             }
         },
         sections: {
-            // return an array of all sections a student is enrolled in
+            // return an array of strings of all sections a student is enrolled in
             // TODO return multiple sections from 'multiple_student_section_mapping' table
             type: new GraphQLList(GraphQLString),
             resolve: parent => {
@@ -101,7 +103,25 @@ const StudentType = new GraphQLObjectType({
         },
         mobile: { type: GraphQLString },
         profile_image: {type: GraphQLString},
-        in_multiple_sections: {type: GraphQLBoolean}
+        in_multiple_sections: {type: GraphQLBoolean},
+        guardians: {
+            type: new GraphQLList(GuardianType),
+            resolve: parent => {
+                let query = `
+                SELECT guardian.*,
+                guardian_type.name relationship
+                FROM guardian_student_mapping
+                JOIN guardian ON guardian_student_mapping.guardian_id = guardian.id 
+                JOIN guardian_type ON guardian_student_mapping.guardian_type_id = guardian_type.id
+                WHERE guardian_student_mapping.student_id = ` + parent.id;
+                
+                return db.get(query).then(response => {
+                    return response.map(guardian => {
+                        return GuardianTypeObj(guardian);
+                    });
+                }).catch(err => console.log(err));
+            }
+        }
     })
 });
 
