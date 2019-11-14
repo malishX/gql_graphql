@@ -29,8 +29,9 @@ const parseMessageType = (message_type_id, action_type_id) => {
             case 6:
                 return "moments";
             default:
-                return "Unknown Type";
+                throw new Error('Message Type Unknown');
         }
+    else throw new Error('Message Type Unknown');
 };
 
 const getMessageByID = msgID => {
