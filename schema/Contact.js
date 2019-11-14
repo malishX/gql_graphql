@@ -90,7 +90,7 @@ const ContactType = new GraphQLObjectType({
                 context.contact_id = parent.id;
 
                 // return all messages mapped to this parent.id (contact.id)
-                // That have been 1. approved
+                // That have been 1. Approved or doesn't need approval 2. Not draft 3. Not SMS message
                 // Ordered from newest to oldest
                 let query = `SELECT 
                 messages.id, 
@@ -106,11 +106,13 @@ const ContactType = new GraphQLObjectType({
                 messages.scheduled_time
                 FROM messages_mapping INNER JOIN messages ON messages_mapping.message_id=messages.id 
                 WHERE messages_mapping.contact_id= `+parent.id+`
-                AND messages.approval_status in (0,2)`;
+                AND messages.approval_status in (0,2)
+                AND messages.message_type_id != '4' 
+                AND messages.is_draft = 'no' `;
                 
-                if (args.as_guardian)
+                if (args.as_guardian) // Set true for 'all feeds' tab
                     query += ` AND messages_mapping.guardian_id != 0 `
-                if (args.as_staff)
+                if (args.as_staff) // Set true for 'my messages' tab
                     query += ` AND messages_mapping.staff_id != 0 `
                 
                 // TODO if both are true return all messages
