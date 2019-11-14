@@ -7,6 +7,32 @@ const {StudentType, StudentTypeObj} = require('./Student');
 const db = require('../db');
 const DataLoader = require('dataloader');
 
+const parseMessageType = (message_type_id, action_type_id) => {
+    // because we currently store different info regarding a message type in different tables
+    // this function will take the IDs of messeage's (message_type) attribute and (action_type) attribute
+    // and will return a string of one of the known message types in Schoolvoice
+    // announcement, acknowledge, approval, reply, micropayment, emergency, sms, moments
+    if(message_type_id == 3) return "emergency"
+    if(message_type_id == 4) return "sms"
+    if(message_type_id == 1)
+        switch (action_type_id) {
+            case 1:
+                return "announcement";
+            case 2:
+                return "acknowledge";
+            case 3:
+                return "approval";
+            case 4:
+                return "micropayment";
+            case 5:
+                return "reply";
+            case 6:
+                return "moments";
+            default:
+                return "Unknown Type";
+        }
+};
+
 const getMessageByID = msgID => {
     let query = "Select * from messages where id in ("+msgID+")";
     return db.get(query).then( response => {
@@ -120,24 +146,10 @@ const MessageType = new GraphQLObjectType({
                 })
             }
         },
-        isEmergency: {
-            type: GraphQLBoolean,
+        message_type: {
+            type: GraphQLString,
             resolve: parent => {
-                if (parent.message_type_id == 3) return true;
-                else return false;
-            }
-        },
-        action_type_id: {type: GraphQLString}, 
-        action_type: {
-            type: FlagType,
-            resolve: parent => {
-                let query = "SELECT id, short_name FROM action_types WHERE id="+parent.action_type_id;
-                let result = db.get(query).then(function(response){
-                    return FlagTypeObj(response[0].id, response[0].short_name);
-                }).catch(function(err){
-                    console.log(err);
-                });
-                return result;
+                return parseMessageType(parent.message_type_id, parent.action_type_id);
             }
         },
         kids: {
