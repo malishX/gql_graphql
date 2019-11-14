@@ -158,10 +158,35 @@ const ContactType = new GraphQLObjectType({
             }
         },
         schools: {
-            // returns a list schools a staff contact is enrolled in
+            // returns a list of schools a contact is enrolled in
             type: GraphQLList(SchoolType),
-            resolve: parent => {
-                let query = `` ;
+            args: {
+                as_guardian: {type: GraphQLBoolean},
+                as_staff: {type: GraphQLBoolean}
+            },
+            resolve: (parent, args) => {
+                let query;
+                // Only one parameter must be true
+                if (args.as_guardian && args.as_staff) throw new Error("Specify either as_guardian or as_staff arguments");
+                else if (args.as_guardian)
+                    query = `SELECT schools.* FROM contacts
+                    JOIN guardian ON contacts.id = guardian.contact_id
+                    JOIN schools ON schools.id = guardian.school_id
+                    WHERE 
+                        contacts.id = ` + parent.id;
+                else if (args.as_staff)
+                    query = `SELECT schools.* FROM contacts
+                    JOIN staffs ON contacts.id = staffs.contact_id
+                    JOIN schools ON schools.id = staffs.school_id
+                    WHERE 
+                        contacts.id = ` + parent.id;
+                else throw new Error("Specify as_guardian or as_staff arguments"); 
+
+                return db.get(query).then( response => {
+                    return response.map(school => {
+                        return SchoolTypeObj(school);
+                    })
+                }).catch(err => console.log(err));
             }
         }
     })
