@@ -3,7 +3,7 @@ const {FlagType, FlagTypeObj} = require('./Flag');
 const {FileType, FileTypeObj} = require('./File');
 const {UserType, UserTypeObj} = require('./User');
 const {SchoolType, SchoolTypeObj} = require('./School');
-const {StudentType, StudentTypeObj} = require('./Student');
+const {StudentType, StudentTypeObj} = require('./Student'); 
 const db = require('../db');
 const DataLoader = require('dataloader');
 
