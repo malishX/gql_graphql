@@ -1,22 +1,8 @@
 const mysql = require('mysql');
+const dbconfig = require('./dbconfig');
 
-const config = {
-    local: {
-        host: 'localhost',
-        port: '8889',
-        user: 'root',
-        password: 'root',
-        database: 'schoolvoice.in',
-    },
-    staging: {
-        host: 'staging-omar-use.cgalft0ltrdh.eu-west-3.rds.amazonaws.com',
-        user: 'root',
-        password: 'jacka&dji7l',
-        database: 'schoomp8_db',
-    }
-}
 
-const db = mysql.createConnection(config.local);
+const db = mysql.createConnection(dbconfig.local);
 
 const connection = db.connect(function(err){
     if (err) {

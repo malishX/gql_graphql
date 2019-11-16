@@ -1,0 +1,17 @@
+const dbconfig = {
+    local: {
+        host: 'localhost',
+        port: '8889',
+        user: 'root',
+        password: 'root',
+        database: 'schoolvoice.in',
+    },
+    staging: {
+        
+    },
+    production: {
+
+    }
+}
+
+module.exports = dbconfig;
