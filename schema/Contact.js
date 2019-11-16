@@ -90,8 +90,7 @@ const ContactType = new GraphQLObjectType({
             args: {
                 // returns latest N messages
                 first: {type: GraphQLInt},
-                as_guardian: {type: GraphQLBoolean},
-                as_staff: {type: GraphQLBoolean},
+                as: {type: contactTypeEnum}
             },
             resolve(parent, args, context){
 
@@ -120,27 +119,25 @@ const ContactType = new GraphQLObjectType({
                 AND messages.message_type_id != '4' 
                 AND messages.is_draft = 'no' `;
                 
-                if (args.as_guardian) // Set true for 'all feeds' tab
+                if (args.as == 'guardian') // 'All Feeds' tab
                     query += ` AND messages_mapping.guardian_id != 0 `
-                if (args.as_staff) // Set true for 'my messages' tab
+                if (args.as == 'staff') // 'My Messages' tab
                     query += ` AND messages_mapping.staff_id != 0 `
                 
-                // TODO if both are true return all messages
-                // TODO messages as student
+                // TODO handle messages as student
 
                 query += ` ORDER BY messages_mapping.created DESC `;
 
                 if (args.first != null)
                 query += ` LIMIT ` + args.first;
 
-                let result = db.get(query).then(function(response){
+                return result = db.get(query).then(function(response){
                     return response.map((message)=>{
                         return MessageTypeObj(message);
                     });
                 }).catch(function(err){
                     console.log(err);
                 });
-                return result;
             }
         },
         children: {
