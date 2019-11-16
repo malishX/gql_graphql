@@ -4,6 +4,7 @@ const {
     GraphQLObjectType,
     GraphQLID,
     GraphQLString,
+    GraphQLBoolean
 } = graphql;
 
 const LoginTypeObj = (response) => {
@@ -16,6 +17,10 @@ const LoginTypeObj = (response) => {
 
 const LoginType = new GraphQLObjectType({
     name: 'Login',
+    args: {
+        // resend arg used to switch the SMS provider on OTP 2nd time send.
+        resend: {type: GraphQLBoolean}
+    },
     fields: () => ({
         contact_id: {type: GraphQLID},
         otp: {type: GraphQLString},
