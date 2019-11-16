@@ -11,8 +11,18 @@ const {
     GraphQLString,
     GraphQLList,
     GraphQLInt,
-    GraphQLBoolean
+    GraphQLBoolean,
+    GraphQLEnumType
 } = graphql;
+
+const contactTypeEnum = new GraphQLEnumType({
+    name: "ContactType",
+    values: {
+        guardian: {value: "guardian"},
+        staff: {value: "staff"},
+        student: {value: "student"}
+    }
+});
 
 const ContactTypeObj = (response) => {
     return {
@@ -161,27 +171,35 @@ const ContactType = new GraphQLObjectType({
             // returns a list of schools a contact is enrolled in
             type: GraphQLList(SchoolType),
             args: {
-                as_guardian: {type: GraphQLBoolean},
-                as_staff: {type: GraphQLBoolean}
+                as: {type: contactTypeEnum}
             },
             resolve: (parent, args) => {
                 let query;
-                // Only one parameter must be true
-                if (args.as_guardian && args.as_staff) throw new Error("Specify either as_guardian or as_staff arguments");
-                else if (args.as_guardian)
+                if (args.as == "guardian")
                     query = `SELECT schools.* FROM contacts
                     JOIN guardian ON contacts.id = guardian.contact_id
                     JOIN schools ON schools.id = guardian.school_id
                     WHERE 
                         contacts.id = ` + parent.id;
-                else if (args.as_staff)
+                else if (args.as == "staff")
                     query = `SELECT schools.* FROM contacts
                     JOIN staffs ON contacts.id = staffs.contact_id
                     JOIN schools ON schools.id = staffs.school_id
                     WHERE 
                         contacts.id = ` + parent.id;
-                else throw new Error("Specify as_guardian or as_staff arguments"); 
-
+                else // Load all messages sent to this contact regardless of his type
+                    query = `
+                    SELECT DISTINCT
+                        schools.* 
+                    FROM
+                        contacts
+                        JOIN guardian ON contacts.id = guardian.contact_id
+                        JOIN staffs ON guardian.contact_id = staffs.contact_id
+                        JOIN schools ON schools.id = staffs.school_id 
+                        OR schools.id = guardian.school_id 
+                    WHERE
+                        contacts.id = ` + parent.id;
+                // TODO handle students schools
                 return db.get(query).then( response => {
                     return response.map(school => {
                         return SchoolTypeObj(school);
