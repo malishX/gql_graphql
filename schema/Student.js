@@ -1,6 +1,7 @@
 const graphql = require('graphql');
 const {SchoolType, SchoolTypeObj} = require('./School');
 const {GuardianType, GuardianTypeObj} = require('./Guardian');
+const {StaffType, StaffTypeObj} = require('./Staff');
 const db = require('../db');
 
 const {
@@ -118,6 +119,29 @@ const StudentType = new GraphQLObjectType({
                 return db.get(query).then(response => {
                     return response.map(guardian => {
                         return GuardianTypeObj(guardian);
+                    });
+                }).catch(err => console.log(err));
+            }
+        },
+        teachers: {
+            // returns  an array of StaffType
+            // of the staff who are assigned sections that this setudent is assigned to. 
+            type: new GraphQLList(StaffType),
+            resolve: parent => {
+                let query = `
+                SELECT
+                    staffs.*
+                FROM
+                    staffs
+                    JOIN staff_class_mapping ON staffs.id = staff_class_mapping.staff_id
+                    JOIN students ON staff_class_mapping.section_id = students.section_id
+                WHERE
+                    students.id = ` + parent.id;
+                // TOOD include multi-section students in this query
+                // TODO check if this includes all teachers (campus, multi_school ..etc)
+                return db.get(query).then(response => {
+                    return response.map(teacher => {
+                        return StaffTypeObj(teacher);
                     });
                 }).catch(err => console.log(err));
             }
