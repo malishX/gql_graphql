@@ -210,8 +210,43 @@ const MessageType = new GraphQLObjectType({
                 });
                 return result;
             }
+        },
+        action_status: {
+            // returns the latest action given to this message regarding this student ID, From any guardian
+            type: GraphQLString,
+            resolve: (parent, args, context) => {
+                if (!context.contact_id) throw new Error("contact_id argument is undefined");
+                let query = `
+                SELECT actions_history.action_status
+                FROM messages_mapping
+                JOIN actions_history ON messages_mapping.contact_id = actions_history.updated_by 
+                WHERE
+                    messages_mapping.message_id = `+ parent.id + `  
+                    AND messages_mapping.message_id = actions_history.message_id 
+                    AND messages_mapping.student_id IN ( SELECT DISTINCT student_id FROM messages_mapping WHERE message_id = `+ parent.id + `  AND contact_id = ` + context.contact_id + ` ) 
+                ORDER BY actions_history.updated_on DESC 
+                LIMIT 1`;
+                return db.get(query).then(response => {
+                    // TODO move this switch statement to a separate method
+                    if (!response[0]) throw new Error("No action was recorded for this message before");  // If No action_history record found
+                    else
+                    switch (response[0].action_status) {
+                        case 0:
+                            return "default";
+                        case 1: 
+                            return "acknowledge";
+                        case 2:
+                            return "approve";
+                        case 3:
+                            return "decline";
+                        case 4:
+                            return "pay"
+                        default:
+                            return "default";
+                    }
+                });
+            }
         }
-        // group_id -> GroupType
     })
 });
 
