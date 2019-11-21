@@ -120,6 +120,32 @@ const Mutation = new GraphQLObjectType({
                 } else throw new Error("Invalid request");
                 
             }
+        },
+        updateProfile: {
+            type: GraphQLString,
+            args: {
+                contact_id: {type: GraphQLNonNull(GraphQLID)},
+                name: {type: GraphQLString},
+                email: {type: GraphQLString},
+                // TODO profile picture
+            },
+            resolve: async (parent, args) => {
+                let query = `UPDATE contacts SET`
+                if (args.name) query += ` name="` + args.name + `"`;
+                if (args.email) query += `, email="` + args.email + `"`;
+                query += ` where id =` + args.contact_id;
+                // TODO add validation for the email (syntax), name (> character) and address
+                // TODO add address string arg + column in DB
+
+                let updatedProfile = db.get(query).then(response => {
+                    if (response.affectedRows > 0) return true;
+                    else return false;
+                });
+    
+                if (await updatedProfile)
+                    return "success"
+                else throw new Error("Invalid request");
+            }
         }
     }
 });
