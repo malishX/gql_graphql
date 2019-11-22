@@ -1,13 +1,5 @@
-const graphql = require('graphql');
-const {FlagType, FlagTypeObj} = require('./Flag');
+const {FlagTypeObj} = require('./Flag');
 const db = require('../db');
-
-const {
-    GraphQLObjectType,
-    GraphQLID,
-    GraphQLString,
-    GraphQLBoolean
-} = graphql;
 
 const UserTypeObj = response => {
     // console.log(response);
@@ -31,40 +23,19 @@ const UserTypeObj = response => {
     }
 }
 
-const UserType = new GraphQLObjectType({
-    name: 'User',
-    fields: () => ({
-        id: {type: GraphQLID},
-        username: {type: GraphQLString},
-        email: {type: GraphQLString},
-        phone: {type: GraphQLString},
-        address: {type: GraphQLString},
-        full_name: {type: GraphQLString},
-        profile_image: {type: GraphQLString},
-        user_type: {
-            type: FlagType,
-            resolve: parent => {
-                let query = "Select id, name from usertypes where id="+parent.user_type_id;
-                let result = db.get(query).then(function(response){
-                    return FlagTypeObj(response[0].id, response[0].name)
-                }).catch(function(err){
-                    console.log(err);
-                });
-
-                return result;
-            }
-        },
-        status: {type: GraphQLString},
-        created: {type: GraphQLString},
-        created_by: {type: GraphQLID},
-        is_superadmin: {type: GraphQLBoolean,},
-        is_school_admin: {type: GraphQLBoolean},
-        staff_id: {type: GraphQLID},
-        in_multiple_schools: {type: GraphQLBoolean}
-    })
-});
+const User = {
+    user_type(parent) {
+        let query = "Select id, name from usertypes where id="+parent.user_type_id;
+        let result = db.get(query).then(function(response){
+            return FlagTypeObj(response[0].id, response[0].name)
+        }).catch(function(err){
+            console.log(err);
+        });
+        return result;
+    },
+};
 
 module.exports = {
-    UserType,
+    User,
     UserTypeObj
 }
