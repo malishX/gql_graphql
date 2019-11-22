@@ -35,7 +35,6 @@ const parseMessageType = (message_type_id, action_type_id) => {
 const getMessageByID = msgID => {
     let query = "Select * from messages where id in ("+msgID+")";
     return db.get(query).then( response => {
-        console.log(query);
         return (MessageTypeObj(response[0]));
     }).catch( err => {
         console.log(err);

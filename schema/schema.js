@@ -1,10 +1,6 @@
-// const {GraphQLSchema} = require('graphql');
-// const {RootQueryType} = require('./RootQuery');
-// const {Mutation} = require('./Mutation');
 const {gql} = require('apollo-server');
-const {MessageType, MessageTypeObj, getMessageByID, messageLoader} = require('./Message');
 
-const typedefs = gql`
+const typeDefs = gql`
 schema {
     query: RootQuery
     mutation: Mutation
@@ -169,12 +165,4 @@ type User {
 }
 `;
 
-const resolvers = {
-    RootQuery: {
-        Message(parent, args){
-            return messageLoader.load(args.id);
-        }
-    },
-};
-
-module.exports = typedefs;
+module.exports = typeDefs;
