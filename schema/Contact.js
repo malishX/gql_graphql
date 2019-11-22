@@ -32,7 +32,6 @@ const ContactTypeObj = (response) => {
 const Contact = {
     type(parent){
         let query = "SELECT id, name FROM contact_type WHERE id="+parent.contact_type_id;
-        console.log(query);
         let result = db.get(query).then(function(response){
             return FlagTypeObj(response[0].id, response[0].name)
         }).catch(function(err){
@@ -49,6 +48,8 @@ const Contact = {
         // return all messages mapped to this parent.id (contact.id)
         // That have been 1. Approved or doesn't need approval 2. Not draft 3. Not SMS message
         // Ordered from newest to oldest
+
+        // TODO fix the query returning messages multiple times (becase it is selecting from mapping table) use distinct
         let query = `SELECT 
         messages.id, 
         messages.created,
