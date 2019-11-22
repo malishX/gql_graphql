@@ -2,7 +2,6 @@ const {FlagTypeObj} = require('./Flag');
 const db = require('../db');
 
 const UserTypeObj = response => {
-    // console.log(response);
     return {
         id: response.id,
         username: response.username,
