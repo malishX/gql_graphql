@@ -1,23 +1,13 @@
-const express = require('express');
-const graphqlHTTP = require('express-graphql');
-const schema = require('./schema/schema');
-// const loaders = require('./loaders/loaders');
-const DataLoader = require('dataloader');
-const {getMessageKids} = require('./schema/Student');
+// const express = require('express');
+const { ApolloServer } = require('apollo-server');
+const typeDefs= require('./schema/schema');
+const resolvers = require('./schema/resolvers');
 
+const app = new ApolloServer({ 
+    typeDefs,
+    resolvers
+ });
 
-const app = express();
-
-app.use('/', graphqlHTTP({
-    schema,
-    context: {
-        // loaders: {
-        //     studentLoader: new DataLoader( getMessageKids , { cache: true }),
-        // }
-    },
-    graphiql: true
-}));
-
-app.listen("8080", () => {
-    console.log('listening for requests on port 8080');
+app.listen(3000).then(({ url }) => {
+    console.log(`🚀 Server ready at ${url}`);
 });
