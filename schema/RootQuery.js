@@ -1,106 +1,64 @@
-const graphql = require('graphql');
-const {MessageType, MessageTypeObj, getMessageByID, messageLoader} = require('./Message');
-const {ContactType, ContactTypeObj} = require('./Contact');
-const {UserType, UserTypeObj} = require('./User');
-const {StudentType, StudentTypeObj} = require('./Student');
-const {SchoolType, SchoolTypeObj} = require('./School'); 
-const {LoginType, LoginTypeObj} = require('./login'); 
+const {messageLoader} = require('./Message');
+const {ContactTypeObj} = require('./Contact');
+const {UserTypeObj} = require('./User');
+const {StudentTypeObj} = require('./Student');
+const {SchoolTypeObj} = require('./School'); 
+const {LoginTypeObj} = require('./login'); 
 const db = require('../db');
 
-const {
-    GraphQLObjectType,
-    GraphQLID,
-    GraphQLString,
-} = graphql;
-
-const RootQueryType = new GraphQLObjectType({
-    name: 'RootQuery',
-    fields: {
-        message: {
-            type: MessageType,
-            args: { id: {type: GraphQLID} },
-            resolve: (parent,args) => {
-                return messageLoader.load(args.id);
-            }
-        },
-        contact: {
-            type: ContactType,
-            args: { id: {type: GraphQLID}},
-            resolve: (parent,args) => {
-                let query;
-                // TODO this can be a switch statment and maybe can be encapsulated in a function to handle it.
-                if (args.id) query = "Select * from contacts where id="+args.id;
-                let result = db.get(query).then(function(response){
-                    return ContactTypeObj(response[0]);
-                }).catch(function(err){
-                    console.log(err);
-                });
-                return result;
-            }
-        },
-        user: {
-            type: UserType,
-            args: {
-                id: {type: GraphQLID}
-            },
-            resolve: (parent, args) => {
-                let query = "SELECT * from users where id="+args.id;
-                let result = db.get(query).then(function(response){
-                    return UserTypeObj(response[0]);
-                }).catch(function(err){
-                    console.log(err);
-                });
-                return result;
-            }
-        },
-        student: {
-            type: StudentType,
-            args: {
-                id: {type: GraphQLID}
-            },
-            resolve: (parent, args) => {
-                let query = "select * from students where id="+args.id;
-                let result = db.get(query).then(function(response){
-                    return StudentTypeObj(response[0]);
-                }).catch(function(err){
-                    console.log(err);
-                });
-                return result;
-            }
-        },
-        school: {
-            type: SchoolType,
-            args: {
-                id: {type: GraphQLID}
-            },
-            resolve: (parent, args) => {
-                let query = "select * from schools where id="+args.id;
-                let result = db.get(query).then(function(response){
-                    return SchoolTypeObj(response[0]);
-                }).catch(function(err){
-                    console.log(err);
-                });
-                return result;
-            }
-        },
-        login: {
-            type: LoginType,
-            args: {
-                mobile: {type: GraphQLString}
-            },
-            resolve: (parent, args) =>{
-                let query = `
-                SELECT id, auth_token
-                FROM contacts
-                WHERE mobile = '` + args.mobile + `'`;
-                return db.get(query).then( response => {
-                    return LoginTypeObj(response[0]);
-                }).catch( err => console.log(err));
-            }
-        },
-    }
-});
+const RootQuery = {
+    message(_, {id}){
+        return messageLoader.load(id);
+    },
+    contact(_, {id}) {
+        let query;
+        // TODO this can be a switch statment and maybe can be encapsulated in a function to handle it.
+        if (id) query = "Select * from contacts where id = " + id;
+        let result = db.get(query).then(function(response){
+            return ContactTypeObj(response[0]);
+        }).catch(function(err){
+            console.log(err);
+        });
+        return result;
+    },
+    user(_, {id}) {
+        let query = "SELECT * from users where id = " + id;
+        let result = db.get(query).then(function(response){
+            return UserTypeObj(response[0]);
+        }).catch(function(err){
+            console.log(err);
+        });
+        return result;
+    },
+    student(_, {id}) {
+        let query = "select * from students where id = " + id;
+        let result = db.get(query).then(function(response){
+            return StudentTypeObj(response[0]);
+        }).catch(function(err){
+            console.log(err);
+        });
+        return result;
+    },
+    school(_, {id}){
+        let query = "select * from schools where id = " + id;
+        let result = db.get(query).then(function(response){
+            return SchoolTypeObj(response[0]);
+        }).catch(function(err){
+            console.log(err);
+        });
+        return result;
+    },
+    login(_, {mobile}) {
+        let query = `
+        SELECT id, auth_token
+        FROM contacts
+        WHERE mobile = '` + mobile + `'`;
+        return db.get(query).then( response => {
+            return LoginTypeObj(response[0]);
+        }).catch( err => console.log(err));
+    },
+};
 
 module.exports = {
-    RootQueryType
+    RootQuery
 };

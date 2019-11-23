@@ -1,13 +1,3 @@
-const graphql = require('graphql');
-const {UserType, UserTypeObj} = require('./User');
-const db = require('../db');
-
-const {
-    GraphQLObjectType,
-    GraphQLID,
-    GraphQLString,
-} = graphql;
-
 const SchoolTypeObj = (response) => {
     return {
         id: response.id,
@@ -33,33 +23,6 @@ const SchoolTypeObj = (response) => {
     }
 }
 
-const SchoolType = new GraphQLObjectType({
-    name: 'School',
-    fields: ()=>({
-        id: {type: GraphQLID},
-        name: {type: GraphQLString},
-        code: {type: GraphQLString},
-        about: {type: GraphQLString},
-        address: {type: GraphQLString},
-        phone: {type: GraphQLString},
-        fax: {type: GraphQLString},
-        email: {type: GraphQLString},
-        website: {type: GraphQLString},
-        profile_img: {type: GraphQLString}, //image
-        profile_background: {type: GraphQLString}, //school_pic
-        status: {type: GraphQLString},
-        curriculum: {type: GraphQLString},
-        country_code: {type: GraphQLString},
-        country_id: {type: GraphQLID},
-        language: {type: GraphQLString},
-        longitude: {type: GraphQLString},
-        latitude: {type: GraphQLString},
-        // created: //date time obj
-        // created_by: {type: UserType}
-    })
-});
-
 module.exports = {
-    SchoolType,
     SchoolTypeObj
 };

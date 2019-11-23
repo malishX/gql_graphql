@@ -1,10 +1,3 @@
-const graphql = require('graphql');
-const {
-    GraphQLObjectType,
-    GraphQLString,
-    GraphQLInt
-} = graphql;
-
 const FlagTypeObj = (id, name)=>{
     return {
         flag: id,
@@ -12,15 +5,6 @@ const FlagTypeObj = (id, name)=>{
     }
 }
 
-const FlagType = new GraphQLObjectType({
-    name: 'Flag',
-    fields: ()=>({
-        flag: {type: GraphQLInt},
-        label: {type: GraphQLString}
-    })
-});
-
 module.exports = {
-    FlagType,
     FlagTypeObj
 }
