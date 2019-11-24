@@ -1,7 +1,19 @@
+const dotenv = require('dotenv');
+const AWS = require('aws-sdk');
+const stream = require('stream');
 const db = require('../db');
 const validateMapping = require('../utils/validateMessageMappingToContact');
 const validateMessage = require('../utils/validateMessageTypeAndAction');
 const actionStringToActionID = require('../utils/actionStringToActionID');
+const uploadReadableStream = require('../utils/uploadReadableStreamToS3');
+
+dotenv.config();
+const s3 = new AWS.S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.S3_REGION,
+});
+
 
 const Mutation = {
     setMessageAction: async (_, {message_id, contact_id, action_status}) => {
@@ -58,6 +70,24 @@ const Mutation = {
         if (await updateProfile)
             return "success"
         else throw new Error("Invalid request");
+    },
+    updateProfileImage: async (_, {file}) => {
+        // 1. validate
+        // file format
+        // file size
+
+
+        // 2. Upload to S3
+        const {filename} = file; // Get file name
+        let fileUploadName = filename+"_"+Date.now(); // Add random characters to file name
+        let readstream = createReadStream(file);
+        const uploadResult = await uploadReadableStream(s3, process.env.USER_PROFILE_IMAGES_BUCKET, fileUploadName , readstream);
+        console.log('upload complete', uploadResult);
+
+        // 3. store link in DB
+
+        // 4. TODO return string image url
+
     }
 };
 
