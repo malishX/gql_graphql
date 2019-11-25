@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 const AWS = require('aws-sdk');
 const db = require('../db');
+const typer = require('media-typer');
 const validateMapping = require('../utils/validateMessageMappingToContact');
 const validateMessage = require('../utils/validateMessageTypeAndAction');
 const actionStringToActionID = require('../utils/actionStringToActionID');
@@ -70,33 +71,37 @@ const Mutation = {
             return "success"
         else throw new Error("Invalid request");
     },
-    updateProfileImage: async (_, {contact_id, file}) => {
+    
+    uploadProfileImage: async (_, {file}) => {
         // 1. TODO Validate file
         // file format - mimetype (jpg, png, anything else?)
         // file size (MAX_Size)
 
-
         // 2. Upload to S3
-        const {createReadStream, filename} = await file; // Get file name
-        let fileUploadName = filename+"_"+Date.now(); // Add random characters to file name
+        const {createReadStream, filename, mimetype} = await file; // Get file name
+        let fileType = typer.parse(mimetype);
+        let fileUploadName = filename+"_"+Date.now()+"."+fileType.subtype; // Add random characters and extension
         let readstream = createReadStream(file);
         const uploadResult = await uploadReadableStream(s3, process.env.USER_PROFILE_IMAGES_BUCKET, fileUploadName , readstream);
         
-        // 3. store url in DB
-        let imagePath = uploadResult.key; //get path from uploadResult
-        let query;
-        if (imagePath)
-            query = `UPDATE contacts SET image="` + imagePath + `" where id = ` + contact_id;
-
+        // 3. return string image path 
+        if (await uploadResult)
+            return uploadResult.key;
+        else throw new Error("Couldn't upload the image");
+    },
+    updateProfileImage: async (_, {contact_id, imageURL}) => {
+        // Since passing two arguments (multipart file and contact_id) did not workout (caused various bugs) for an unknown reason
+        // We decided to separate the functionality to two mutations
+        // uploadProfileImage will accept and upload the file and return the path
+        // updateProfileImage will get the path and contact_id and update the DB
+        let query = `UPDATE contacts SET image="` + imageURL + `" where id = ` + contact_id;
         let updateProfileImage = db.get(query).then(response => {
             if (response.affectedRows > 0) return true;
             else return false;
         });
-        
-        // 4. TODO return string image path 
-        if (await uploadResult && await updateProfileImage)
-            return uploadResult.key;
-        else throw new Error("Couldn't save the image");
+        if (await updateProfileImage)
+            return "success"
+        else throw new Error("Couldn't update profile image");
     }
 };
 
