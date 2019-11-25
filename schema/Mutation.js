@@ -1,7 +1,6 @@
 const dotenv = require('dotenv');
 const AWS = require('aws-sdk');
 const db = require('../db');
-const typer = require('media-typer');
 const validateMapping = require('../utils/validateMessageMappingToContact');
 const validateMessage = require('../utils/validateMessageTypeAndAction');
 const actionStringToActionID = require('../utils/actionStringToActionID');
@@ -78,9 +77,8 @@ const Mutation = {
         // file size (MAX_Size)
 
         // 2. Upload to S3
-        const {createReadStream, filename, mimetype} = await file; // Get file name
-        let fileType = typer.parse(await mimetype);
-        let fileUploadName = filename+"_"+Date.now()+"."+fileType.subtype; // Add random characters and extension
+        const {createReadStream, filename} = await file;
+        let fileUploadName = filename+"_"+Date.now()+".jpg"; // Add random characters and extension
         let readstream = createReadStream(file);
         const uploadResult = await uploadReadableStream(s3, process.env.USER_PROFILE_IMAGES_BUCKET, fileUploadName , readstream);
         
