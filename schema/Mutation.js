@@ -71,10 +71,10 @@ const Mutation = {
             return "success"
         else throw new Error("Invalid request");
     },
-    updateProfileImage: async (_, {file}) => {
-        // 1. validate
-        // file format
-        // file size
+    updateProfileImage: async (_, {contact_id, file}) => {
+        // 1. TODO Validate file
+        // file format - mimetype (jpg, png, anything else?)
+        // file size (MAX_Size)
 
 
         // 2. Upload to S3
@@ -82,12 +82,22 @@ const Mutation = {
         let fileUploadName = filename+"_"+Date.now(); // Add random characters to file name
         let readstream = createReadStream(file);
         const uploadResult = await uploadReadableStream(s3, process.env.USER_PROFILE_IMAGES_BUCKET, fileUploadName , readstream);
-        console.log('upload complete', uploadResult);
 
-        // 3. store link in DB
+        // 3. store url in DB
+        let imagePath = uploadResult.key; //get path from uploadResult
+        let query;
+        if (imagePath)
+            query = `UPDATE contacts SET image="` + imagePath + `" where id = ` + contact_id;
 
-        // 4. TODO return string image url
-
+        let updateProfileImage = db.get(query).then(response => {
+            if (response.affectedRows > 0) return true;
+            else return false;
+        });
+        
+        // 4. TODO return string image path 
+        if (await uploadResult && await updateProfileImage)
+            return uploadResult.key;
+        else throw new Error("Couldn't save the image");
     }
 };
 
