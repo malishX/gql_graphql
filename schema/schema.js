@@ -91,7 +91,7 @@ type Message {
 type Mutation {
     setMessageAction(message_id: ID!, contact_id: ID!, action_status: ActionStatus!): String
     updateProfile(contact_id: ID!, name: String, email: String): String
-    updateProfileImage(file: Upload!): String!
+    updateProfileImage(contact_id: ID!, file: Upload!): String!
 }
   
 type RootQuery {
