@@ -1,6 +1,5 @@
 const dotenv = require('dotenv');
 const AWS = require('aws-sdk');
-const stream = require('stream');
 const db = require('../db');
 const validateMapping = require('../utils/validateMessageMappingToContact');
 const validateMessage = require('../utils/validateMessageTypeAndAction');
@@ -78,11 +77,11 @@ const Mutation = {
 
 
         // 2. Upload to S3
-        const {filename} = file; // Get file name
+        const {createReadStream, filename} = await file; // Get file name
         let fileUploadName = filename+"_"+Date.now(); // Add random characters to file name
         let readstream = createReadStream(file);
         const uploadResult = await uploadReadableStream(s3, process.env.USER_PROFILE_IMAGES_BUCKET, fileUploadName , readstream);
-
+        
         // 3. store url in DB
         let imagePath = uploadResult.key; //get path from uploadResult
         let query;
