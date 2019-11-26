@@ -1,7 +1,7 @@
 const {MessageTypeObj} = require('./Message');
-const {FlagTypeObj} = require('./Flag');
 const {SchoolTypeObj} = require('./School'); 
 const {StudentTypeObj} = require('./Student');
+const {ContactMatrixObj} = require('./ContactMatrix');
 const db = require('../db');
 
 const ContactTypeObj = (response) => {
@@ -31,13 +31,27 @@ const ContactTypeObj = (response) => {
 
 const Contact = {
     type(parent){
-        let query = "SELECT id, name FROM contact_type WHERE id="+parent.contact_type_id;
-        let result = db.get(query).then(function(response){
-            return FlagTypeObj(response[0].id, response[0].name)
+        // No need to query students, guardians, or staff tables for this contact ID because
+        // In our current system we only allow a contact to be one of four types (Student, Guardian, Staff, Staff + Guardian)
+        // For example a contact can not be a student and a guardian at the same time (considered as two different contacts with different login credentials)
+        let query = "SELECT id FROM contact_type WHERE id="+parent.contact_type_id;
+        return db.get(query).then(function(response){
+            // TODO move this swith to a utils function
+            switch (response[0].id) {
+                case 1: // contact is student
+                    return ContactMatrixObj(false, false, true);
+                case 2: // contact is guardian
+                    return ContactMatrixObj(true, false, false);
+                case 3: // contact is staff
+                    return ContactMatrixObj(false, true, false);
+                case 4: // contact is guardian & staff
+                    return ContactMatrixObj(true, true, false);
+                default:
+                    return null;
+            }
         }).catch(function(err){
             console.log(err);
         });
-        return result;
     },
 
     messages(parent, {first, as}, context) {
@@ -126,7 +140,7 @@ const Contact = {
             JOIN schools ON schools.id = staffs.school_id
             WHERE 
                 contacts.id = ` + parent.id;
-        else // Load all messages sent to this contact regardless of his type
+        else // Load all schools related to this contact regardless of his type
             query = `
             SELECT DISTINCT
                 schools.* 

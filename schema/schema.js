@@ -13,15 +13,21 @@ enum ActionStatus {
     decline
     pay
 }
+
+enum ContactType {
+    guardian
+    staff
+    student
+}
   
 type Contact {
-    id: ID
+    id: ID!
     name: String
     mobile: String
     email: String
     image: String
     contact_type_id: String
-    type: Flag
+    type: ContactMatrix!
     device_type: String
     device_id: String
     voip_device_id: String
@@ -41,18 +47,19 @@ type Contact {
     schools(as: ContactType): [School]
 }
   
-enum ContactType {
-    guardian
-    staff
-    student
-}
-  
 type File {
     name: String
     type: String
     url: String
 }
-  
+
+type ContactMatrix {
+    # not to be confused with enum ContactType
+    guardian: Boolean!
+    staff: Boolean!
+    student: Boolean!
+}
+
 type Flag {
     flag: Int
     label: String
