@@ -124,7 +124,7 @@ const Contact = {
         }).catch( err => console.log(err));
     },
 
-    schools(parent, {as}, context) {
+    schools(parent, {as, school_id}, context) {
         // returns a list of schools a contact is enrolled in
 
         // contact_id will be used in school -> grades and sections resolvers
@@ -155,6 +155,9 @@ const Contact = {
                 OR schools.id = guardian.school_id 
             WHERE
                 contacts.id = ` + parent.id;
+        
+        if(school_id) query += ` AND schools.id = ` + school_id;
+        
         // TODO handle students schools
         return db.get(query).then( response => {
             return response.map(school => {

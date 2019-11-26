@@ -44,7 +44,7 @@ type Contact {
     status: String
     messages(first: Int, as: ContactType): [Message]
     children: [Student]
-    schools(as: ContactType): [School]
+    schools(school_id: ID, as: ContactType): [School]
 }
 
 type Grade {
