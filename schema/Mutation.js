@@ -70,8 +70,7 @@ const Mutation = {
             return "success"
         else throw new Error("Invalid request");
     },
-    
-    uploadProfileImage: async (_, {file}) => {
+    updateProfileImage: async (_, {contact_id, file}) => {
         // 1. TODO Validate file
         // file format - mimetype (jpg, png, anything else?)
         // file size (MAX_Size)
@@ -81,24 +80,18 @@ const Mutation = {
         let fileUploadName = filename+"_"+Date.now()+".jpg"; // Add random characters and extension
         let readstream = createReadStream(file);
         const uploadResult = await uploadReadableStream(s3, process.env.USER_PROFILE_IMAGES_BUCKET, fileUploadName , readstream);
-        
-        // 3. return string image path 
-        if (await uploadResult)
-            return uploadResult.key;
-        else throw new Error("Couldn't upload the image");
-    },
-    updateProfileImage: async (_, {contact_id, imageURL}) => {
-        // Since passing two arguments (multipart file and contact_id) did not workout (caused various bugs) for an unknown reason
-        // We decided to separate the functionality to two mutations
-        // uploadProfileImage will accept and upload the file and return the path
-        // updateProfileImage will get the path and contact_id and update the DB
+
+        // 3. Update DB
+        let imageURL = uploadResult.key;
         let query = `UPDATE contacts SET image="` + imageURL + `" where id = ` + contact_id;
         let updateProfileImage = db.get(query).then(response => {
             if (response.affectedRows > 0) return true;
             else return false;
         });
-        if (await updateProfileImage)
-            return "success"
+
+        // 4. return string image path 
+        if (await uploadResult && await updateProfileImage)
+            return uploadResult.key;
         else throw new Error("Couldn't update profile image");
     }
 };
