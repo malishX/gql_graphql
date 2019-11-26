@@ -1,3 +1,5 @@
+const db = require('../db');
+
 const SchoolTypeObj = (response) => {
     return {
         id: response.id,
@@ -23,6 +25,28 @@ const SchoolTypeObj = (response) => {
     }
 }
 
+const School = {
+    grades(parent, _, context){
+        // retunrs list of grades a contact of staff type have access to (assigned to)
+        context.school_id = parent.id;
+        let query = `
+        SELECT
+            DISTINCT grade.id,
+            grade.name
+        FROM
+            contacts
+            JOIN staffs ON contacts.id = staffs.contact_id
+            JOIN staff_class_mapping ON staff_class_mapping.staff_id = staffs.id
+            JOIN section ON staff_class_mapping.section_id = section.id
+            JOIN grade ON section.grade_id = grade.id 
+        WHERE
+            staffs.contact_id = ` + context.contact_id + ` 
+            AND grade.school_id = ` + context.school_id;
+        return db.get(query);
+    }
+}
+
 module.exports = {
+    School,
     SchoolTypeObj
 };

@@ -56,7 +56,6 @@ const Contact = {
 
     messages(parent, {first, as}, context) {
         // Store the contact_id in the context to use it in the messages' kids' resovler
-        //TODO make sure this is relevant to the current request only
         context.contact_id = parent.id;
 
         // return all messages mapped to this parent.id (contact.id)
@@ -125,8 +124,12 @@ const Contact = {
         }).catch( err => console.log(err));
     },
 
-    schools(parent, {as}) {
+    schools(parent, {as}, context) {
         // returns a list of schools a contact is enrolled in
+
+        // contact_id will be used in school -> grades and sections resolvers
+        context.contact_id = parent.id;
+
         let query;
         if (as == "guardian")
             query = `SELECT schools.* FROM contacts

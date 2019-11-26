@@ -46,7 +46,19 @@ type Contact {
     children: [Student]
     schools(as: ContactType): [School]
 }
-  
+
+type Grade {
+    id: ID,
+    name: String,
+    school: School
+    sections: [Section]
+}
+
+type Section {
+    id: ID,
+    name: String
+}
+
 type File {
     name: String
     type: String
@@ -129,6 +141,7 @@ type School {
     language: String
     longitude: String
     latitude: String
+    grades: [Grade] #retunrs list of grades a contact have access to (should be called from type Contact)
 }
   
 type Staff {
