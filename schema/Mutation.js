@@ -100,6 +100,24 @@ const Mutation = {
         if (await updateProfileImage)
             return "success"
         else throw new Error("Couldn't update profile image");
+    },
+    uploadProfileImageTest: async (_, {contact_id, file}) => {
+        const {createReadStream, filename} = await file;
+        let fileUploadName = filename+"_"+Date.now()+".jpg"; // Add random characters and extension
+        let readstream = createReadStream(file);
+        const uploadResult = await uploadReadableStream(s3, process.env.USER_PROFILE_IMAGES_BUCKET, fileUploadName , readstream);
+
+        let imageURL = uploadResult.key;
+        let query = `UPDATE contacts SET image="` + imageURL + `" where id = ` + contact_id;
+        let updateProfileImage = db.get(query).then(response => {
+            if (response.affectedRows > 0) return true;
+            else return false;
+        });
+
+        // 3. return string image path 
+        if (await uploadResult && await updateProfileImage)
+            return uploadResult.key;
+        else throw new Error("Couldn't update profile image");
     }
 };
 

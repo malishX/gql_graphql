@@ -93,6 +93,7 @@ type Mutation {
     updateProfile(contact_id: ID!, name: String, email: String): String
     uploadProfileImage(file: Upload!): String!
     updateProfileImage(contact_id: ID!, imageURL: String!): String!
+    uploadProfileImageTest(contact_id: ID!, file: Upload!): String!
 }
   
 type RootQuery {
