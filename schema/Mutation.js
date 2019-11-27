@@ -93,6 +93,44 @@ const Mutation = {
         if (await uploadResult && await updateProfileImage)
             return uploadResult.key;
         else throw new Error("Couldn't update profile image");
+    },
+
+    addStory: async (_, {contact_id, section_ids, file}) => {
+        // 1. validate size, format
+
+        // 2. upload to S3
+        const {createReadStream, filename, mimetype} = await file;
+        console.log(mimetype);
+        console.log(await mimetype);
+        console.log(file);
+        let fileUploadName = filename+"_"+Date.now()+".jpg"; // Add random characters and extension
+        let readstream = createReadStream(file);
+        const uploadResult = await uploadReadableStream(s3, process.env.STORIES_BUCKET, fileUploadName , readstream);
+        
+        // 3. Insert to DB (story url + sections mapping)
+        let storyURL = uploadResult.key;
+        let insertStoryQuery = `INSERT INTO stories (url, uploaded_by, uploaded_at) VALUES ('` + storyURL + `', ` + contact_id + `, CURRENT_TIMESTAMP); 
+        SELECT LAST_INSERT_ID();`;
+        let story_id = db.get(insertStoryQuery).then(response => {
+            if (response.affectedRows > 0) return true;
+            else return false;
+        });
+
+        if (story_id) // verifies that story record has been added and the primary ID exists
+            let insertMapping = section_ids.map(section_id => {
+                let insertMappingQuery = `INSERT INTO story_mapping (story_id, section_id) VALUES (` + story_id + `, ` + section_id + `)`;
+                return db.get(insertMappingQuery).then(response => {
+                    if (response.affectedRows > 0) return true;
+                    else return false;
+                });
+            });
+        console.log(insertMapping);
+        // 4. push notification to receiving contacts
+
+        // 5. return string story url path
+        if (await uploadResult && await insertMapping)
+            return uploadResult.key;
+        else throw new Error("Couldn't add story");
     }
 };
 
