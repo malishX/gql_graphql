@@ -116,14 +116,16 @@ const Mutation = {
             else return false;
         });
 
+        let insertMapping;
         if (story_id) // verifies that story record has been added and the primary ID exists
-            let insertMapping = section_ids.map(section_id => {
+            insertMapping = section_ids.map(section_id => {
                 let insertMappingQuery = `INSERT INTO story_mapping (story_id, section_id) VALUES (` + story_id + `, ` + section_id + `)`;
                 return db.get(insertMappingQuery).then(response => {
                     if (response.affectedRows > 0) return true;
                     else return false;
                 });
             });
+        console.log(await insertMapping);
         console.log(insertMapping);
         // 4. push notification to receiving contacts
 
