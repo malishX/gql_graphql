@@ -112,11 +112,11 @@ const Mutation = {
         let insertStoryQuery = `INSERT INTO stories (url, uploaded_by, uploaded_at) VALUES ('` + storyURL + `', ` + contact_id + `, CURRENT_TIMESTAMP); 
         SELECT LAST_INSERT_ID();`;
         let story_id = db.get(insertStoryQuery).then(response => {
-            if (response.affectedRows > 0) return true;
+            if (response.LAST_INSERT_ID) return response.LAST_INSERT_ID;
             else return false;
         });
 
-        let insertMapping;
+        let insertMapping = false;
         if (story_id) // verifies that story record has been added and the primary ID exists
             insertMapping = section_ids.map(section_id => {
                 let insertMappingQuery = `INSERT INTO story_mapping (story_id, section_id) VALUES (` + story_id + `, ` + section_id + `)`;
