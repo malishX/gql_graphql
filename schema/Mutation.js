@@ -110,9 +110,9 @@ const Mutation = {
         // 3. Insert to DB (story url + sections mapping)
         let storyURL = uploadResult.key;
         let insertStoryQuery = `INSERT INTO stories (url, uploaded_by, uploaded_at) VALUES ('` + storyURL + `', ` + contact_id + `, CURRENT_TIMESTAMP); 
-        SELECT LAST_INSERT_ID();`;
+        SELECT LAST_INSERT_ID();`; // TODO don't use current_timestamp because it will record the time the story is uploaded not the time it was sent (think offline)
         let story_id = db.get(insertStoryQuery).then(response => {
-            if (response.LAST_INSERT_ID) return response.LAST_INSERT_ID;
+            if (response[0].LAST_INSERT_ID) return response.LAST_INSERT_ID;
             else return false;
         });
 
