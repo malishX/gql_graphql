@@ -164,6 +164,140 @@ const Contact = {
                 return SchoolTypeObj(school);
             })
         }).catch(err => console.log(err));
+    }, 
+    
+    storiesReceived: (parent) => {
+        // returns a list of contacts in which you (contact) can view their stories (uploaded in the last 24 hours)
+
+        // our current logic does not allow a contact to be a student and any other type (staff or guardian, check contact_types DB table)
+        // However in the follwing query I'll get all sections mapped to a contact regardless of the type
+        // Because our current DB structure enforces us to fetch sections mapped to contact from different tables with different approaches
+        // I'll use UNIONs instead of joining tables (brace urself, it is gonna be a long one)
+
+        // Query Explained: 
+        // 1. get what sections this contact is linked to (tables: students, guardians, staffs, multiple_student_section, staff_class_mapping)
+        // 2. query all stories mapped to those sections (table: story_mapping)
+        // 3. get the users who uploaded those stories (table: stories)
+
+        let query = `
+        SELECT DISTINCT
+            contacts.* 
+        FROM
+            stories
+            JOIN story_mapping sm ON stories.id = sm.story_id 
+            JOIN contacts ON stories.uploaded_by = contacts.id
+        WHERE
+            stories.uploaded_at >= NOW() - INTERVAL 1 DAY
+            AND sm.section_id IN (
+                SELECT -- get student sections from students table
+                students.section_id AS section_id 
+            FROM
+                students 
+            WHERE
+                students.contact_id = ` + parent.id + ` UNION
+                SELECT -- get student sections from multiple_student_section table
+                mss.section_id AS section_id 
+            FROM
+                students
+                JOIN multiple_student_section mss ON mss.student_id = students.id 
+            WHERE
+                students.contact_id = ` + parent.id + ` UNION
+                SELECT -- get guardian sections from students table (guardian's children sections)
+                students.section_id AS section_id 
+            FROM
+                students
+                JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
+                JOIN guardian ON guardian.id = gsm.guardian_id 
+            WHERE
+                guardian.contact_id = ` + parent.id + ` UNION
+                SELECT -- get guardian sections from multiple_student_section table (guardian's children sections)
+                mss.section_id AS section_id 
+            FROM
+                students
+                JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
+                JOIN guardian ON guardian.id = gsm.guardian_id
+                JOIN multiple_student_section mss ON mss.student_id = students.id 
+            WHERE
+                guardian.contact_id = ` + parent.id + ` UNION
+                SELECT -- get staff sections from staff_class_mapping table
+                scm.section_id AS section_id 
+            FROM
+                staffs
+                JOIN staff_class_mapping scm ON scm.staff_id = staffs.id 
+            WHERE
+                staffs.contact_id = ` + parent.id + ` 
+            );`;
+            
+        return db.get(query).then(response => {
+            return response.map(contact => {
+                return ContactTypeObj(contact);
+            })
+        });
+    },
+
+    stories: parent => {
+        // returns a list of stories in which you can see of this contact (uploaded in the last 24 hours)
+
+        // Query Explained: 
+        // 1. get what sections this contact is linked to (tables: students, guardians, staffs, multiple_student_section, staff_class_mapping)
+        // 2. query all stories mapped to those sections uploaded by a certain contact (parent.id) (tables: stories, story_mapping)
+
+        let query = `
+        SELECT DISTINCT
+            stories.id,
+            stories.url,
+            stories.uploaded_at as date_time
+        FROM
+            stories
+            JOIN story_mapping sm ON stories.id = sm.story_id 
+        WHERE
+            stories.uploaded_at >= NOW() - INTERVAL 1 DAY
+            AND stories.uploaded_by = ` + parent.id + ` 
+            AND sm.section_id IN (
+                SELECT -- get student sections from students table
+                students.section_id AS section_id 
+            FROM
+                students 
+            WHERE
+                students.contact_id = ` + parent.id + `  UNION
+                SELECT -- get student sections from multiple_student_section table
+                mss.section_id AS section_id 
+            FROM
+                students
+                JOIN multiple_student_section mss ON mss.student_id = students.id 
+            WHERE
+                students.contact_id = ` + parent.id + `  UNION
+                SELECT -- get guardian sections from students table (guardian's children sections)
+                students.section_id AS section_id 
+            FROM
+                students
+                JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
+                JOIN guardian ON guardian.id = gsm.guardian_id 
+            WHERE
+                guardian.contact_id = ` + parent.id + `  UNION
+                SELECT -- get guardian sections from multiple_student_section table (guardian's children sections)
+                mss.section_id AS section_id 
+            FROM
+                students
+                JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
+                JOIN guardian ON guardian.id = gsm.guardian_id
+                JOIN multiple_student_section mss ON mss.student_id = students.id 
+            WHERE
+                guardian.contact_id = ` + parent.id + `  UNION
+                SELECT -- get staff sections from staff_class_mapping table
+                scm.section_id AS section_id 
+            FROM
+                staffs
+                JOIN staff_class_mapping scm ON scm.staff_id = staffs.id 
+            WHERE
+            staffs.contact_id = ` + parent.id + `  
+            );`;
+        
+        return db.get(query).then(response => {
+            return response.map(story => {
+                return story;
+            });
+        });
     }
 };
 

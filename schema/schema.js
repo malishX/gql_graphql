@@ -45,6 +45,8 @@ type Contact {
     messages(first: Int, as: ContactType): [Message]
     children: [Student]
     schools(school_id: ID, as: ContactType): [School]
+    storiesReceived: [Contact] # returns a list of contacts in which you can see a story they posted
+    stories: [Story] # returns a list of stories in which you can see of this contact
 }
 
 type Grade {
@@ -183,6 +185,12 @@ type User {
     is_school_admin: Boolean
     staff_id: ID
     in_multiple_schools: Boolean
+}
+
+type Story {
+    id: ID
+    url: String
+    date_time: String
 }
 `;
 
