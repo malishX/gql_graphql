@@ -191,6 +191,21 @@ type Story {
     id: ID
     url: String
     date_time: String
+    uploaded_by: Contact
+    views: [StoryView]
+    likes: [StoryLike]
+}
+
+type StoryLike {
+    id: ID
+    liked_by: Contact
+    date_time: String
+}
+
+type StoryView {
+    id: ID
+    viewed_by: Contact
+    date_time: String
 }
 `;
 
