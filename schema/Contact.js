@@ -190,42 +190,42 @@ const Contact = {
             stories.uploaded_at >= NOW() - INTERVAL 1 DAY
             AND sm.section_id IN (
                 SELECT -- get student sections from students table
-                students.section_id AS section_id 
-            FROM
-                students 
-            WHERE
-                students.contact_id = ` + parent.id + ` UNION
+                    students.section_id AS section_id 
+                FROM
+                    students 
+                WHERE
+                    students.contact_id = ` + parent.id + ` UNION
                 SELECT -- get student sections from multiple_student_section table
-                mss.section_id AS section_id 
-            FROM
-                students
-                JOIN multiple_student_section mss ON mss.student_id = students.id 
-            WHERE
-                students.contact_id = ` + parent.id + ` UNION
+                    mss.section_id AS section_id 
+                FROM
+                    students
+                    JOIN multiple_student_section mss ON mss.student_id = students.id 
+                WHERE
+                    students.contact_id = ` + parent.id + ` UNION
                 SELECT -- get guardian sections from students table (guardian's children sections)
-                students.section_id AS section_id 
-            FROM
-                students
-                JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
-                JOIN guardian ON guardian.id = gsm.guardian_id 
-            WHERE
-                guardian.contact_id = ` + parent.id + ` UNION
+                    students.section_id AS section_id 
+                FROM
+                    students
+                    JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
+                    JOIN guardian ON guardian.id = gsm.guardian_id 
+                WHERE
+                    guardian.contact_id = ` + parent.id + ` UNION
                 SELECT -- get guardian sections from multiple_student_section table (guardian's children sections)
-                mss.section_id AS section_id 
-            FROM
-                students
-                JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
-                JOIN guardian ON guardian.id = gsm.guardian_id
-                JOIN multiple_student_section mss ON mss.student_id = students.id 
-            WHERE
-                guardian.contact_id = ` + parent.id + ` UNION
+                    mss.section_id AS section_id 
+                FROM
+                    students
+                    JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
+                    JOIN guardian ON guardian.id = gsm.guardian_id
+                    JOIN multiple_student_section mss ON mss.student_id = students.id 
+                WHERE
+                    guardian.contact_id = ` + parent.id + ` UNION
                 SELECT -- get staff sections from staff_class_mapping table
-                scm.section_id AS section_id 
-            FROM
-                staffs
-                JOIN staff_class_mapping scm ON scm.staff_id = staffs.id 
-            WHERE
-                staffs.contact_id = ` + parent.id + ` 
+                    scm.section_id AS section_id 
+                FROM
+                    staffs
+                    JOIN staff_class_mapping scm ON scm.staff_id = staffs.id 
+                WHERE
+                    staffs.contact_id = ` + parent.id + ` 
             );`;
             
         return db.get(query).then(response => {
@@ -255,42 +255,42 @@ const Contact = {
             AND stories.uploaded_by = ` + parent.id + ` 
             AND sm.section_id IN (
                 SELECT -- get student sections from students table
-                students.section_id AS section_id 
-            FROM
-                students 
-            WHERE
-                students.contact_id = ` + parent.id + `  UNION
+                    students.section_id AS section_id 
+                FROM
+                    students 
+                WHERE
+                    students.contact_id = ` + parent.id + `  UNION
                 SELECT -- get student sections from multiple_student_section table
-                mss.section_id AS section_id 
-            FROM
-                students
-                JOIN multiple_student_section mss ON mss.student_id = students.id 
-            WHERE
-                students.contact_id = ` + parent.id + `  UNION
+                    mss.section_id AS section_id 
+                FROM
+                    students
+                    JOIN multiple_student_section mss ON mss.student_id = students.id 
+                WHERE
+                    students.contact_id = ` + parent.id + `  UNION
                 SELECT -- get guardian sections from students table (guardian's children sections)
-                students.section_id AS section_id 
-            FROM
-                students
-                JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
-                JOIN guardian ON guardian.id = gsm.guardian_id 
-            WHERE
-                guardian.contact_id = ` + parent.id + `  UNION
+                    students.section_id AS section_id 
+                FROM
+                    students
+                    JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
+                    JOIN guardian ON guardian.id = gsm.guardian_id 
+                WHERE
+                    guardian.contact_id = ` + parent.id + `  UNION
                 SELECT -- get guardian sections from multiple_student_section table (guardian's children sections)
-                mss.section_id AS section_id 
-            FROM
-                students
-                JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
-                JOIN guardian ON guardian.id = gsm.guardian_id
-                JOIN multiple_student_section mss ON mss.student_id = students.id 
-            WHERE
-                guardian.contact_id = ` + parent.id + `  UNION
+                    mss.section_id AS section_id 
+                FROM
+                    students
+                    JOIN guardian_student_mapping gsm ON students.id = gsm.student_id
+                    JOIN guardian ON guardian.id = gsm.guardian_id
+                    JOIN multiple_student_section mss ON mss.student_id = students.id 
+                WHERE
+                    guardian.contact_id = ` + parent.id + `  UNION
                 SELECT -- get staff sections from staff_class_mapping table
-                scm.section_id AS section_id 
-            FROM
-                staffs
-                JOIN staff_class_mapping scm ON scm.staff_id = staffs.id 
-            WHERE
-            staffs.contact_id = ` + parent.id + `  
+                    scm.section_id AS section_id 
+                FROM
+                    staffs
+                    JOIN staff_class_mapping scm ON scm.staff_id = staffs.id 
+                WHERE
+                staffs.contact_id = ` + parent.id + `  
             );`;
         
         return db.get(query).then(response => {
