@@ -26,9 +26,10 @@ const SchoolTypeObj = (response) => {
 }
 
 const School = {
-    grades(parent, _, context){
+    grades: async parent => {
         // retunrs list of grades a contact of staff type have access to (assigned to)
-        context.school_id = parent.id;
+        let contact_id = parent.contact_id;
+        let school_id = parent.id;
         let query = `
         SELECT
             DISTINCT grade.id,
@@ -40,9 +41,18 @@ const School = {
             JOIN section ON staff_class_mapping.section_id = section.id
             JOIN grade ON section.grade_id = grade.id 
         WHERE
-            staffs.contact_id = ` + context.contact_id + ` 
-            AND grade.school_id = ` + context.school_id;
-        return db.get(query);
+            staffs.contact_id = ` + contact_id + ` 
+            AND grade.school_id = ` + school_id;
+            
+        return db.get(query).then(response => {
+            return response.map(grade => {
+                return {
+                    ... grade,
+                    contact_id,
+                    school_id
+                }
+            })
+        });
     }
 }
 
