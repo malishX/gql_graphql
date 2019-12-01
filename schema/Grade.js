@@ -1,7 +1,7 @@
 const db = require('../db');
 
 const Grade =  {
-    sections(parent, _, context){
+    sections: parent => {
         let query = `
         SELECT DISTINCT
             section.id,
@@ -13,8 +13,8 @@ const Grade =  {
             JOIN section ON staff_class_mapping.section_id = section.id
             JOIN grade ON section.grade_id = grade.id 
         WHERE
-            staffs.contact_id = ` + context.contact_id + ` 
-            AND grade.school_id = `+ context.school_id +` 
+            staffs.contact_id = ` + parent.contact_id + ` 
+            AND grade.school_id = `+ parent.school_id +` 
             AND grade.id = `+ parent.id; 
 
         return db.get(query);

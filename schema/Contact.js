@@ -124,25 +124,22 @@ const Contact = {
         }).catch( err => console.log(err));
     },
 
-    schools(parent, {as, school_id}, context) {
+    schools(parent, {as, school_id}) {
         // returns a list of schools a contact is enrolled in
-
-        // contact_id will be used in school -> grades and sections resolvers
-        context.contact_id = parent.id;
-
+        let contact_id = parent.id;
         let query;
         if (as == "guardian")
             query = `SELECT schools.* FROM contacts
             JOIN guardian ON contacts.id = guardian.contact_id
             JOIN schools ON schools.id = guardian.school_id
             WHERE 
-                contacts.id = ` + parent.id;
+                contacts.id = ` + contact_id;
         else if (as == "staff")
             query = `SELECT schools.* FROM contacts
             JOIN staffs ON contacts.id = staffs.contact_id
             JOIN schools ON schools.id = staffs.school_id
             WHERE 
-                contacts.id = ` + parent.id;
+                contacts.id = ` + contact_id;
         else // Load all schools related to this contact regardless of his type
             query = `
             SELECT DISTINCT
@@ -154,14 +151,17 @@ const Contact = {
                 JOIN schools ON schools.id = staffs.school_id 
                 OR schools.id = guardian.school_id 
             WHERE
-                contacts.id = ` + parent.id;
+                contacts.id = ` + contact_id;
         
         if(school_id) query += ` AND schools.id = ` + school_id;
         
         // TODO handle students schools
         return db.get(query).then( response => {
             return response.map(school => {
-                return SchoolTypeObj(school);
+                return {
+                    ... SchoolTypeObj(school), 
+                    contact_id
+                };
             })
         }).catch(err => console.log(err));
     }, 
