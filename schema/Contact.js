@@ -54,10 +54,10 @@ const Contact = {
         });
     },
 
-    messages(parent, {first, as}, context) {
-        // Store the contact_id in the context to use it in the messages' kids' resovler
-        context.contact_id = parent.id;
-
+    messages(parent, {first, as}) {
+        
+        let contact_id = parent.id;
+        
         // return all messages mapped to this parent.id (contact.id)
         // That have been 1. Approved or doesn't need approval 2. Not draft 3. Not SMS message
         // Ordered from newest to oldest
@@ -95,7 +95,10 @@ const Contact = {
 
         return result = db.get(query).then(function(response){
             return response.map((message)=>{
-                return MessageTypeObj(message);
+                return {
+                    ... MessageTypeObj(message),
+                    contact_id
+                };
             });
         }).catch(function(err){
             console.log(err);

@@ -16,9 +16,9 @@ const Story = {
         });
     },
 
-    views: (parent, _, context) => {
+    views: parent => {
 
-        context.story_id = parent.id;
+        let story_id = parent.id;
 
         let query = `
         SELECT
@@ -27,16 +27,21 @@ const Story = {
         FROM
             story_views 
         WHERE
-            story_id = ` + context.story_id;
+            story_id = ` + story_id;
 
         return db.get(query).then(response => {
-            return response;
+            return response.map(storyView => {
+                return {
+                    ... storyView,
+                    story_id
+                };
+            });
         });
     },
 
-    likes: (parent, _, context) => {
+    likes: parent => {
 
-        context.story_id = parent.id;
+        let story_id = parent.id;
 
         let query = `
         SELECT
@@ -45,10 +50,15 @@ const Story = {
         FROM
             story_likes 
         WHERE
-            story_id = ` + context.story_id;
+            story_id = ` + story_id;
 
         return db.get(query).then(response => {
-            return response;
+            return response.map(storyLike => {
+                return {
+                    ... storyLike,
+                    story_id
+                };
+            });
         });
     }
 };

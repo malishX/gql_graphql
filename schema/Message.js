@@ -69,7 +69,7 @@ const MessageTypeObj = (response) => {
 }
 
 const Message = {
-    attachments(parent){
+    attachments: parent => {
         let files = parent.files;
         if(files && files.length != 0) files = JSON.parse(files);
         else return null;
@@ -78,12 +78,12 @@ const Message = {
         });
     },
 
-    isUrgent(parent){
+    isUrgent: parent => {
         if (parent.message_type_id == 2) return true;
         else return false;
     },
 
-    isCC(parent, _, context){
+    isCC: parent => {
         // get isCC from message mapping, using message_id and contact_id
         let query = `
         SELECT
@@ -92,7 +92,7 @@ const Message = {
             messages_mapping
         WHERE
             messages_mapping.message_id = `+ parent.id +
-            ` AND contact_id =` + context.contact_id;
+            ` AND contact_id =` + parent.contact_id;
         // TODO: add one more check (staff_id), to get only one value no more,
         // beacuse this query might return more than one value
         // if the message was sent to a guardian + staff type and the staff is CCed;
@@ -105,14 +105,14 @@ const Message = {
         });
     },
 
-    isReminder(parent, _, context){
+    isReminder: parent => {
         // returns if this contact was reminded about this messages before
         let query = `
         SELECT id
         FROM reminder_mapping
         WHERE
             message_id = ` + parent .id +
-            ` AND contact_id =` + context.contact_id;
+            ` AND contact_id =` + parent.contact_id;
 
         return db.get(query).then( response => {
             if (response.length) return true;
@@ -124,12 +124,12 @@ const Message = {
         })
     },
 
-    message_type(parent){
+    message_type: parent => {
         return parseMessageType(parent.message_type_id, parent.action_type_id);
     },
 
-    kids(parent, _, context){
-        // return context.loaders.studentLoader.load(parent.id, context.contact_id);
+    kids: parent => {
+        // return context.loaders.studentLoader.load(parent.id, parent.contact_id);
         // TODO use StudentLoader and pass contact_id to it
         let query = `
         SELECT
@@ -140,7 +140,7 @@ const Message = {
         ON messages_mapping.student_id = students.id
         WHERE
         message_id IN (`+ parent.id +`)
-        AND messages_mapping.contact_id = ` + context.contact_id; 
+        AND messages_mapping.contact_id = ` + parent.contact_id; 
         
         return db.get(query).then(students => {
             return students.map(student => {
@@ -151,7 +151,7 @@ const Message = {
         });
     },
 
-    school(parent){
+    school: parent => {
         let query = "select * from schools where id="+parent.school_id;
         let result = db.get(query).then(function(response){
             return SchoolTypeObj(response[0]);
@@ -161,12 +161,12 @@ const Message = {
         return result;
     },
 
-    date_time(parent){
+    date_time: parent => {
         if (parent.is_scheduled) return parent.scheduled_time;
         else return parent.created;
     },
 
-    sender(parent){
+    sender: parent => {
         let query = "SELECT * FROM users WHERE id="+parent.created_by;
         let result = db.get(query).then(function(response){
             return UserTypeObj(response[0]);
@@ -176,9 +176,9 @@ const Message = {
         return result;
     },
 
-    action_status(parent, _, context){
+    action_status: parent => {
         // returns the latest action given to this message regarding this student ID, From any guardian
-        if (!context.contact_id) throw new Error("contact_id argument is undefined");
+        if (!parent.contact_id) throw new Error("contact_id argument is undefined");
         let query = `
         SELECT actions_history.action_status
         FROM messages_mapping
@@ -186,7 +186,7 @@ const Message = {
         WHERE
             messages_mapping.message_id = `+ parent.id + `  
             AND messages_mapping.message_id = actions_history.message_id 
-            AND messages_mapping.student_id IN ( SELECT DISTINCT student_id FROM messages_mapping WHERE message_id = `+ parent.id + `  AND contact_id = ` + context.contact_id + ` ) 
+            AND messages_mapping.student_id IN ( SELECT DISTINCT student_id FROM messages_mapping WHERE message_id = `+ parent.id + `  AND contact_id = ` + parent.contact_id + ` ) 
         ORDER BY actions_history.updated_on DESC 
         LIMIT 1`;
         return db.get(query).then(response => {
