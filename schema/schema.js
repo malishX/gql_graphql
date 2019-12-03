@@ -112,6 +112,10 @@ type Mutation {
     updateProfile(contact_id: ID!, name: String, email: String): String # returns 'success'
     updateProfileImage(contact_id: ID!, file: Upload!): String! # returns profile image url
     addStory(contact_id: ID!, section_ids: [ID!]!, file: Upload!): String! # returns story url
+    deleteStory(id: ID!, contact_id: ID!): String # returns 'success'
+    addStoryLike(story_id: ID!, contact_id: ID!): String # returns 'success'
+    deleteStoryLike(story_id: ID!, contact_id: ID!): String # returns 'success'
+    addStoryView(story_id: ID!, contact_id: ID!): String # returns 'success'
 }
   
 type RootQuery {
