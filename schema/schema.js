@@ -59,6 +59,7 @@ type Grade {
 type Section {
     id: ID,
     name: String
+    students: [Student]
 }
 
 type File {

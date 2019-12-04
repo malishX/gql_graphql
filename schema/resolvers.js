@@ -7,10 +7,11 @@ const {User} = require('./User');
 const {Student} = require('./Student');
 const {School} = require('./School');
 const {Grade} = require('./Grade');
+const {Section} = require('./Section');
 const {Story} = require('./Story');
 const {StoryLike} = require('./StoryLike');
 const {StoryView} = require('./StoryView');
 
-const resolvers = merge(RootQuery, {Mutation}, {Message}, {Contact}, {User}, {Student}, {School}, {Grade}, {Story}, {StoryLike}, {StoryView});
+const resolvers = merge(RootQuery, {Mutation}, {Message}, {Contact}, {User}, {Student}, {School}, {Grade}, {Story}, {StoryLike}, {StoryView}, {Section});
 
 module.exports = resolvers;
