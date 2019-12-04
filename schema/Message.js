@@ -221,7 +221,8 @@ const Message = {
             id,
             reply_text AS text,
             image_url AS attached_image_url,
-            updated_on AS date_time 
+            updated_on AS date_time,
+            updated_by
         FROM
             message_reply 
         WHERE
