@@ -5,6 +5,8 @@ const validateMapping = require('../utils/validateMessageMappingToContact');
 const validateMessage = require('../utils/validateMessageTypeAndAction');
 const actionStringToActionID = require('../utils/actionStringToActionID');
 const uploadReadableStream = require('../utils/uploadReadableStreamToS3');
+const messageTypeIsEqualTo = require('../utils/messageTypeIsEqualTo');
+const replyIsEnabled = require('../utils/replyIsEnabled');
 
 dotenv.config();
 const s3 = new AWS.S3({
@@ -207,6 +209,39 @@ const Mutation = {
         if (await viewStory)
             return "success";
         else throw new Error("Couldn't add story view"); // TODO check if we need an error here or just fail with null
+    },
+
+    sendMessageReply: async (_, {message_id, contact_id, text, file}) => {
+        // 1. verify the message exists & is of type 'reply'
+        // 2. verify this message is mapped to this contact
+        // 3. verify reply is enabled on the message
+        let valid = false;
+        valid = (
+            await messageTypeIsEqualTo(message_id, "reply")
+            && await validateMapping(message_id, contact_id)
+            && await replyIsEnabled(message_id));
+    
+        // 4. upload file if available
+        let uploadResult;
+        if (file){
+            const {createReadStream, filename, mimetype} = await file;
+            console.log(mimetype);
+            console.log(await mimetype);
+            console.log(file);
+            let fileUploadName = filename+"_"+Date.now()+".jpg"; // Add random characters and extension
+            let readstream = createReadStream(file);
+            uploadResult = await uploadReadableStream(s3, process.env.MESSAGE_ATTACHMENTS_BUCKET, fileUploadName , readstream);
+        }
+        // 5. send the reply
+        let attachmentURL = typeof(uploadResult) == "undefined" ? '' : uploadResult.key;
+        let query = `
+        INSERT INTO message_reply ( message_id, reply_text, image_url, updated_by, updated_on )
+        VALUES ( ` + message_id + `, "` + text + `", "` + attachmentURL + `", ` + contact_id + `, CURRENT_TIMESTAMP );`
+        if (await valid)
+            return db.get(query).then(response => {
+                if (response.affectedRows > 0) return "success";
+                else throw new Error("Couldn't send reply");
+            });
     }
 };
 

@@ -120,6 +120,7 @@ type Mutation {
     addStoryLike(story_id: ID!, contact_id: ID!): String # returns 'success'
     deleteStoryLike(story_id: ID!, contact_id: ID!): String # returns 'success'
     addStoryView(story_id: ID!, contact_id: ID!): String # returns 'success'
+    sendMessageReply(message_id: ID!, contact_id: ID!, text: String!, file: Upload): String # returns 'success'
 }
   
 type RootQuery {

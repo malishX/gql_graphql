@@ -9,7 +9,7 @@ const validateMapping = async (message_id, contact_id)  => {
 
     return await db.get(query).then(response => {
         if (response.length > 0) return true;
-        else throw new Error("No message mapping record found");
+        else throw new Error("No message mapping record to this contact was found");
     });
 }
 
