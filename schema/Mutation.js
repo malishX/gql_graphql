@@ -93,6 +93,120 @@ const Mutation = {
         if (await uploadResult && await updateProfileImage)
             return uploadResult.key;
         else throw new Error("Couldn't update profile image");
+    },
+
+    addStory: async (_, {contact_id, section_ids, file}) => {
+        // 1. validate size, format
+
+        // 2. upload to S3
+        const {createReadStream, filename, mimetype} = await file;
+        console.log(mimetype);
+        console.log(await mimetype);
+        console.log(file);
+        let fileUploadName = filename+"_"+Date.now()+".jpg"; // Add random characters and extension
+        let readstream = createReadStream(file);
+        const uploadResult = await uploadReadableStream(s3, process.env.STORIES_BUCKET, fileUploadName , readstream);
+        
+        // 3. Insert to DB (story url + sections mapping)
+        let storyURL = uploadResult.key;
+        let insertStoryQuery = `INSERT INTO stories (url, uploaded_by, uploaded_at) VALUES ('` + storyURL + `', ` + contact_id + `, CURRENT_TIMESTAMP); 
+        SELECT LAST_INSERT_ID();`; // TODO don't use current_timestamp because it will record the time the story is uploaded not the time it was sent (think offline)
+        let story_id = db.get(insertStoryQuery).then(response => {
+            if (response[0].LAST_INSERT_ID) return response.LAST_INSERT_ID;
+            else return false;
+        });
+
+        let insertMapping = false;
+        if (story_id) // verifies that story record has been added and the primary ID exists
+            insertMapping = section_ids.map(section_id => {
+                let insertMappingQuery = `INSERT INTO story_mapping (story_id, section_id) VALUES (` + story_id + `, ` + section_id + `)`;
+                return db.get(insertMappingQuery).then(response => {
+                    if (response.affectedRows > 0) return true;
+                    else return false;
+                });
+            });
+        console.log(await insertMapping);
+        console.log(insertMapping);
+        // 4. push notification to receiving contacts
+
+        // 5. return string story url path
+        if (await uploadResult && await insertMapping)
+            return uploadResult.key;
+        else throw new Error("Couldn't add story");
+    },
+
+    deleteStory: async (_, {id, contact_id}) => {
+        // 1. TODO verify this story exists and is uploaded by this contact
+
+        // 2. delete story and any row that references it (ON DELETE CASCADE constraint)
+        let query = `DELETE FROM stories WHERE id = ` + id;
+        let deleteStory = db.get(query).then(response => {
+            if (response.affectedRows > 0) return true;
+            else return false;
+        });
+
+        if (await deleteStory)
+            return "success";
+        else throw new Error("Couldn't delete story");
+    },
+
+    addStoryLike: async (_, {story_id, contact_id}) => {
+        // like can be added once per contact per story, else it would fail
+        let query = `
+        INSERT INTO story_likes (story_id, liked_by, liked_at)
+        SELECT ` + story_id + `, ` + contact_id + `, CURRENT_TIMESTAMP 
+        FROM DUAL 
+        WHERE
+        NOT EXISTS
+        (SELECT story_id, liked_by FROM story_likes WHERE liked_by= ` + contact_id + ` and story_id = ` + story_id + ` );`
+        
+        let likeStory = db.get(query).then(response => {
+            if (response.affectedRows > 0) return true;
+            else return false;
+        });
+
+        if (await likeStory)
+            return "success";
+        else throw new Error("Couldn't like story");
+    },
+
+    deleteStoryLike: async (_, {story_id, contact_id}) => {
+        let query = `
+        DELETE 
+        FROM
+            story_likes 
+        WHERE
+            liked_by = ` + contact_id + ` 
+            AND story_id = ` + story_id;
+
+        let deleteStoryLike = db.get(query).then(response => {
+            if (response.affectedRows > 0) return true;
+            else return false;
+        });
+
+        if (await deleteStoryLike)
+            return "success";
+        else throw new Error("Couldn't delete story like");
+    },
+
+    addStoryView: async (_, {story_id, contact_id}) => {
+        // story view can be added once per contact per story, else it would fail (first view only)
+        let query = `
+        INSERT INTO story_views (story_id, viewed_by, viewed_at)
+        SELECT ` + story_id + `, ` + contact_id + `, CURRENT_TIMESTAMP 
+        FROM DUAL 
+        WHERE
+        NOT EXISTS
+        (SELECT story_id, viewed_by FROM story_views WHERE viewed_by= ` + contact_id + ` and story_id = ` + story_id + ` );`
+
+        let viewStory = db.get(query).then(response => {
+            if (response.affectedRows > 0) return true;
+            else return false;
+        });
+
+        if (await viewStory)
+            return "success";
+        else throw new Error("Couldn't add story view"); // TODO check if we need an error here or just fail with null
     }
 };
 
