@@ -12,7 +12,7 @@ const parseMessageType = (message_type_id, action_type_id) => {
     // announcement, acknowledge, approval, reply, micropayment, emergency, sms, moments
     if(message_type_id == 3) return "emergency"
     if(message_type_id == 4) return "sms"
-    if(message_type_id == 1)
+    if(message_type_id == 1 || message_type_id == 2) // General or Urgent
         switch (action_type_id) {
             case 1:
                 return "announcement";
