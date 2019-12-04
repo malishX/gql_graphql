@@ -23,7 +23,8 @@ const Story = {
         let query = `
         SELECT
             id,
-            viewed_at AS date_time 
+            viewed_at AS date_time,
+            viewed_by
         FROM
             story_views 
         WHERE
@@ -46,7 +47,8 @@ const Story = {
         let query = `
         SELECT
             id,
-            liked_at AS date_time 
+            liked_at AS date_time,
+            liked_by
         FROM
             story_likes 
         WHERE
