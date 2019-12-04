@@ -108,6 +108,7 @@ type Message {
     date_time: String
     sender: User
     action_status: String
+    replies: [MessageReply]
 }
   
 type Mutation {
@@ -211,6 +212,14 @@ type StoryLike {
 type StoryView {
     id: ID
     viewed_by: Contact
+    date_time: String
+}
+
+type MessageReply {
+    id: ID
+    text: String
+    attached_image_url: String
+    sender: Contact
     date_time: String
 }
 `;

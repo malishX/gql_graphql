@@ -208,6 +208,29 @@ const Message = {
                     return "default";
             }
         });
+    },
+
+    replies: parent => {
+        // 1. verify the message is of type reply
+        if (parseMessageType(parent.message_type_id, parent.action_type_id) != "reply")
+            throw new Error("Message is not of type reply");
+
+        // 2. query message replies and return
+        let query = `
+        SELECT
+            id,
+            reply_text AS text,
+            image_url AS attached_image_url,
+            updated_on AS date_time 
+        FROM
+            message_reply 
+        WHERE
+            message_id = ` + parent.id + ` 
+        ORDER BY
+            updated_on ASC`;
+
+        return db.get(query);
+
     }
 };
 
