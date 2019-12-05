@@ -137,7 +137,7 @@ const Message = {
 
     date_time: parent => {
         if (parent.is_scheduled) return parent.scheduled_time;
-        else return parent.created;
+        else return parent.created; // TODO take the time from messages_mapping table because this could reflect a draft creation time
     },
 
     sender: parent => {
