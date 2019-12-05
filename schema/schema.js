@@ -47,6 +47,7 @@ type Contact {
     schools(school_id: ID, as: ContactType): [School]
     storiesReceived: [Contact] # returns a list of contacts in which you can see a story they posted
     stories: [Story] # returns a list of stories in which you can see of this contact
+    sent_messages: [Message] # returns a list of messages sent by any user ID linked to this contact
 }
 
 type Grade {
