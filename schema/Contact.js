@@ -378,6 +378,43 @@ const Contact = {
             });
         });
     },
+
+    draft_messages: parent => {
+        // returns a list of messages drafted by any user ID linked to this contact (by the staff_id)
+        // That have been 1. Approved or doesn't need approval 2. is draft 3. Not SMS message 4. Not health report
+        // Ordered from newest to oldest
+        let query = `
+        SELECT
+            messages.id, 
+            messages.created,
+            messages.message, 
+            messages.amount, 
+            messages.action_type_id, 
+            messages.message_type_id, 
+            messages.sender_type_id,
+            messages.created_by, 
+            messages.school_id, 
+            messages.is_scheduled, 
+            messages.scheduled_time 
+        FROM
+            messages
+            JOIN users ON users.id = messages.created_by
+            JOIN staffs ON users.staff_id = staffs.id 
+        WHERE
+            messages.approval_status IN ( 0, 2 ) -- approved or doesn't need approval
+            AND messages.message_type_id != '4' -- not SMS
+            AND messages.is_draft = 'yes' -- draft only
+	        AND messages.report_type = 0 -- not health report
+            AND staffs.contact_id = ` + parent.id + ` 
+        ORDER BY
+            messages.created DESC`;
+
+        return db.get(query).then(response => {
+            return response.map(message => {
+                return MessageTypeObj(message);
+            });
+        });
+    }
 };
 
 module.exports = {

@@ -49,6 +49,7 @@ type Contact {
     stories: [Story] # returns a list of stories in which you can see of this contact
     sent_messages: [Message] # returns a list of messages sent by any user ID linked to this contact
     scheduled_messages: [Message] # returns a list of messages scheduled by any user ID linked to this contact
+    draft_messages: [Message] # returns a list of messages drafted by any user ID linked to this contact
 }
 
 type Grade {
