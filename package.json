@@ -12,11 +12,11 @@
   "author": "Omar Almashjari",
   "license": "ISC",
   "dependencies": {
-    "apollo-server": "^2.9.11",
+    "apollo-server": "^2.18.2",
     "aws-sdk": "^2.578.0",
     "dataloader": "^1.4.0",
     "dotenv": "^8.2.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.20",
     "mysql": "^2.17.1",
     "stream": "0.0.2"
   }
